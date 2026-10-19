@@ -1,4 +1,5 @@
 #include "dc_models.h"
+#include <cstdlib>
 #include "dc_opening.h"
 
 #include <fstream>
@@ -63,6 +64,8 @@ void DcModels::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_clear_jump", "map", "event"), &DcModels::set_clear_jump);
     ClassDB::bind_method(D_METHOD("boss_cleared", "map_no", "floor"), &DcModels::boss_cleared);
     ClassDB::bind_method(D_METHOD("game_over", "walker"), &DcModels::game_over);
+    ClassDB::bind_method(D_METHOD("cheat_set_game_int", "index", "value"), &DcModels::cheat_set_game_int);
+    ClassDB::bind_method(D_METHOD("cheat_set_game_flag", "index", "value"), &DcModels::cheat_set_game_flag);
     ClassDB::bind_method(D_METHOD("get_party"), &DcModels::get_party);
     ClassDB::bind_method(D_METHOD("switch_character", "walker", "character"), &DcModels::switch_character);
     ClassDB::bind_method(D_METHOD("join_party", "character"), &DcModels::join_party);
@@ -306,6 +309,17 @@ Node3D *DcModels::assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, cons
         if (!layout.fixed || boss_next_ || story_next_) unit->load_floor(*disc_, *tables_, map_no, floor, false);
         if (boss_next_) {
             walker->set_boss_floor(true);
+            {   // where the boss room's own floor-start / intro script leaves the hero (read from dun/script/d0N/event.stb, checked by running the script: tests --event-end); the floor's 'in' frame is the wrong place for these
+                struct Start { int map, floor; double x, z, yaw; };
+                static const Start kStarts[] = {
+                    {2, 17, 0.0, 150.0, -3.14},     // d03: function 100 (_SET_NPC_POS(-1, 0, 10, 150)); the 'in' frame lies behind a wall that the hero cannot cross
+                    {3, 17, 0.0, 580.0, 0.0},       // d04: the intro (fn_26d04) ends with the hero at z = 580
+                    {5, 24, 0.0, 48.32, 3.06},      // d06 stage 1: function 199 (the floor's own start frame is the arena's centre, where the boss's shock wave lands)
+                    {6, 99, 8.17, 148.41, -2.90},   // d07: the intro (function 199) ends close to the boss
+                };
+                for (const Start &st : kStarts)
+                    if (st.map == map_no && st.floor == floor) walker->set_start(st.x, st.z, st.yaw);
+            }
             walker->set_boss_handler([this](int m, int f) { boss_cleared(m, f); });
         }
         walker->set_monsters(unit, *tables_, map_no, monster_rand_state, dccore::parse_collision_mds(disc_->read("dun/etc/atrcol.mds")), events, floor, layout.map1_variant);
@@ -323,7 +337,8 @@ Node3D *DcModels::assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, cons
                     },
                     [this, map_no, floor](dccore::MonsterUnit &u, bool back) { u.load_floor(*disc_, *tables_, map_no, floor, back); });
         }
-        if (!boss_next_ && map_no >= 0 && map_no < 7) {   // the dungeon's own script runs the story rooms' events and the markers of the character rooms of random floors
+        const bool boss_script = boss_next_ && std::getenv("DC_BOSS_HARDCODED") == nullptr;   // (the boss room's own floor-start function runs: the intro scene, the hero's place, the monsters, the gate and trigger markers; DC_BOSS_HARDCODED=1 skips it for comparisons)
+        if ((!boss_next_ || boss_script) && map_no >= 0 && map_no < 7) {   // the dungeon's own script runs the story rooms' events and the markers of the character rooms of random floors
             char spath[96];
             std::snprintf(spath, sizeof spath, "dun/script/d%02d/event.stb", map_no + 1);
             const dccore::Bytes stb = disc_->read(spath);
@@ -338,7 +353,7 @@ Node3D *DcModels::assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, cons
                 return nullptr;
             };
             auto session = std::make_shared<dccore::DungeonSession>(stb, map_no, &save_, walker->status_ptr(), &walker->game_rand(), item_db_.get(), system_text_.get(), bank.get(), walker->event_host());
-            walker->set_dungeon_session(session, story_next_ ? floor : -1);
+            walker->set_dungeon_session(session, (story_next_ || boss_script) ? floor : -1);
             walker->set_ruby_key(ruby_key_);
         }
     }

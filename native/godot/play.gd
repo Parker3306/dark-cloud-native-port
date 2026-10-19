@@ -30,6 +30,11 @@ func _ready() -> void:
 		models.join_party(int(j))
 	if _arg("--character", "") != "":
 		models.set_character(int(_arg("--character")))   # 0 Toan, 1 Xiao, 2 Goro, 3 Ruby, 4 Ungaga, 5 Osmond (they join with their first weapon)
+	for gf in _arg("--game-flag", "").split(",", false):   # tests: story flags set (e.g. 24 = the horn of d01's boss door was used)
+		models.cheat_set_game_flag(int(gf), true)
+	if _arg("--game-int", "") != "":   # tests: --game-int index,value (the story state; 10 = the stage of the last dungeon's bosses)
+		var gi := _arg("--game-int").split(",")
+		models.cheat_set_game_int(int(gi[0]), int(gi[1]))
 	for item in _arg("--give", "").split(",", false):
 		models.cheat_give_item(int(item))
 	var options := {"verbose": true, "first_floor": floor_index, "auto_pick": _arg("--manual-pick", "") == ""}   # (the item window answers by itself in the harness)
@@ -94,6 +99,13 @@ func _ready() -> void:
 	run.left.connect(func(reason: String): print("LEFT ", reason, " ", models.get_clear_jump(), " int0 ", models.get_session_status()))
 	if _arg("--trace", "") != "":
 		run.walker.debug_trace(true)
+	if _arg("--polys", "") != "":   # x,z: the collision polygons of the cell there (walls: normals that are not up)
+		var pq := _arg("--polys").split(",")
+		var plist: Array = run.walker.debug_polys_near(float(pq[0]), float(pq[1]))
+		print("POLYS ", plist.size())
+		for q in plist:
+			if absf(q["n"].y) < 0.7:
+				print("WALL ", q)
 	if _arg("--scan", "") != "":   # x0,x1,z0,z1,step,from_y: print the floor heights under a grid
 		var sc := _arg("--scan").split(",")
 		var step := float(sc[4])
@@ -181,7 +193,14 @@ func _ready() -> void:
 		var target := int(s)
 		var remaining := target - done
 		while remaining > 0:   # --chase N: every N ticks the player is put under the boss (slot 0), to see whether it can be hurt at all
-			var chunk := mini(remaining, int(_arg("--chase", "0"))) if _arg("--chase", "") != "" else remaining
+			var chunk := mini(remaining, int(_arg("--chase", "0"))) if _arg("--chase", "") != "" else (mini(remaining, 20) if _arg("--god", "") != "" else remaining)   # (--god refills between chunks)
+			if _arg("--boss-hp-keep", "") != "" and not run.walker.get_event_ui().get("running", false):   # (script-driven boss rooms respawn their monsters after the intro: the weakening is repeated)
+				for mi in run.walker.get_monster_info():
+					if int(mi.get("hp", 0)) > int(_arg("--boss-hp", "1")):
+						run.walker.debug_set_monster_hp(int(mi["slot"]), int(_arg("--boss-hp", "1")))
+			if _arg("--bot", "") != "":   # tests: a player that walks up to the nearest monster body sphere and swings (set --script none:1 so that devices stay off)
+				chunk = mini(remaining, 6)
+				_bot_pad(run, int(done + (target - done - remaining)))
 			run.advance(chunk)
 			remaining -= chunk
 			if _arg("--god", "") != "":
@@ -232,6 +251,14 @@ func _ready() -> void:
 			var lg := run.walker.debug_log()
 			for k in range(maxi(lg.size() - maxi(int(_arg("--trace")), 40), 0), lg.size()):
 				print("  LOG ", lg[k])
+		if _arg("--event-end", "") != "":
+			print("  EVENTEND ", run.walker.debug_event_end())
+		if _arg("--cols", "") != "":   # the monsters' body spheres that are on
+			print("  HITSTATS ", run.walker.debug_hit_stats())
+			for mc in run.walker.debug_monster_cols():
+				print("  COLS ", mc)
+			for sp in run.walker.debug_player_spheres():
+				print("  SPH ", sp)
 		if _arg("--monsters", "") != "":
 			for m in run.walker.get_monster_info():
 				print("  MON ", m)
@@ -241,3 +268,48 @@ func _ready() -> void:
 			for c in ei["chests"]:
 				print("  CHEST ", c)
 	get_tree().quit()
+
+# A crude fighter for the boss checks: steer to the nearest body sphere of a living monster (else the nearest monster) and swing when close.
+func _bot_pad(run: DungeonRun, tick: int) -> void:
+	var w: DcWalker = run.walker
+	if w.get_event_ui().get("running", false):   # a scene or a message: the OK button (every 20 ticks) and the lock button for the choices
+		w.set_hold_pad(128, 128, 64 if (tick / 10) % 2 == 0 else 32)
+		return
+	var hero := w.get_player_position()
+	var best := Vector3.ZERO
+	var best_d := 1e9
+	for mc in w.debug_monster_cols():
+		if int(mc["hp"]) < 1:
+			continue
+		var pts: Array = []
+		for c in mc["cols"]:
+			pts.append(c["pos"])
+		if pts.is_empty():
+			continue
+		for p in pts:
+			var d: float = Vector2(p.x - hero.x, p.z - hero.z).length()
+			if d < best_d:
+				best_d = d
+				best = p
+	if best_d > 1e8:
+		w.set_hold_pad(128, 128, 0)
+		return
+	var cs := w.get_camera_state()
+	var fwd := Vector2(cs["ref"].x - cs["pos"].x, cs["ref"].z - cs["pos"].z).normalized()
+	var right := Vector2(-fwd.y, fwd.x)
+	var dv := Vector2(best.x - hero.x, best.z - hero.z)
+	var dn := dv.normalized()
+	var f := dn.dot(fwd)
+	var sd := dn.dot(right)
+	var lx := 128
+	var ly := 128
+	var buttons := 0
+	var rng := float(_arg("--bot-range", "24"))   # a ranged character keeps pushing towards the target (to face it) and shoots from afar
+	if best_d > 24.0 or rng >= 100.0:
+		lx = int(clampf(128.0 + sd * 127.0, 0.0, 255.0))
+		ly = int(clampf(128.0 - f * 127.0, 0.0, 255.0))
+	if best_d < maxf(40.0, rng) and (tick / 6) % 4 == 0:
+		buttons = 64
+	if rng >= 100.0 and _arg("--bot-lock", "") != "":
+		buttons |= 32   # (the lock-on button is held)
+	w.set_hold_pad(lx, ly, buttons)

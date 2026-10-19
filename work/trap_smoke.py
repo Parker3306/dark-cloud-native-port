@@ -26,7 +26,7 @@ out = run([], "none:40,attack:2,none:20,%s,%s,%s,%s,%s" % (A, A, A, A, A), "460,
 if "Successfully released the trap" not in out:
     print("FAIL: right guess at the Curse trap")
     fail = True
-out = run(["--set-trap", "3,5", "--god", "1"], "none:40,attack:2,none:20," + ",".join(["attack:2,none:60,circle:2,none:40"] * 12), "600")
+out = run(["--set-trap", "3,5"], "none:40,attack:2,none:20," + ",".join(["attack:2,none:60,circle:2,none:40"] * 12), "600")
 if "You got" not in out:
     print("FAIL: the Happy Clown gave nothing")
     fail = True

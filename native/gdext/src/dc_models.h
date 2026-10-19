@@ -119,6 +119,8 @@ public:
     int wm_build_up(int ch, int slot, int target, Object *walker);
     int wm_powder_count(int id, Object *walker);
     int get_party_size() const { return int(status_.get<int8_t>(5)); }
+    void cheat_set_game_flag(int i, bool v) { save_.set_game_flag(i, v); }   // tests (the story's flags)
+    void cheat_set_game_int(int i, int v) { save_.set_game_int(i, v); }   // tests (the story's integer flags)
     int give_item(int id) { load_tables(); return dccore::get_item(status_, *item_db_, id, rng_); }   // for tests
     Dictionary peek_save(const String &path);                // {exists, day, play_time, gold, name, town}: what a save slot shows
     void set_last_town(int town) { save_.set<int32_t>(0x30, town); }   // config word +0x30 is unused by the game: it remembers the town the player was in

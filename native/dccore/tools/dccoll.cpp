@@ -27,6 +27,17 @@ int main(int argc, char** argv) {
         if (const char* e = std::getenv("DC_FLOOR")) gs.floor_no = std::atoi(e);
         FloorLayout layout = build_random_map(uint32_t(std::strtoul(argv[3], nullptr, 0)), std::atoi(argv[4]), std::atoi(argv[5]), true, &gs);
         const float x = float(std::atof(argv[6])), z = float(std::atof(argv[7]));
+        if (argc > 8 && std::string(argv[8]) == "--fixed-frames") {   // a boss / story room (fixed map): every frame of its collision pieces and the objects of its models
+            for (const auto& kv : dun.collisions) {
+                std::printf("collision %s: %zu polygons\n", kv.first.c_str(), kv.second.polys.size());
+                for (const auto& fr : kv.second.frames) std::printf("    frame %s %g %g %g\n", fr.first.c_str(), double(fr.second[0]), double(fr.second[1]), double(fr.second[2]));
+            }
+            for (const auto& kv : dun.marker_frames) {
+                std::printf("model %s\n", kv.first.c_str());
+                for (const auto& fr : kv.second) std::printf("    object %s %g %g %g\n", fr.first.c_str(), double(fr.second[0]), double(fr.second[1]), double(fr.second[2]));
+            }
+            return 0;
+        }
         if (argc > 8 && std::string(argv[8]) == "--dump") {   // every polygon of the cell containing (x, z) as hex words (cell index = trunc(x / 160))
             auto cell_polys = floor_polys_near(dun, layout, x, z, 0);
             for (const CCPoly& q : cell_polys) {

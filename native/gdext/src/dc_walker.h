@@ -208,7 +208,8 @@ public:
     bool is_view_mode() const { return walker_ && walker_->view_mode; }
     void debug_full_life() { if (world_) { const int ch = world_->status.character(); world_->status.set_life(ch, world_->status.max_life(ch)); world_->status.set<int16_t>(0x8a5c + size_t(ch) * 2, world_->status.max_life(ch)); world_->status.set<int16_t>(0x8a68 + size_t(ch) * 2, 0); { const dccore::WeaponView w = world_->status.stored_weapon(ch); const size_t off = size_t(w.p - world_->status.raw.data()); world_->status.set<float>(off + 0x10, float(w.max_durability())); } if (walker_ && !walker_->combat.dead) walker_->combat.invuln = 120; } }   // tests
     void debug_kill_monsters() { if (world_) for (auto &a : world_->actors) if (a.state == 2) { a.hp = 0; a.state = -1; if (a.death_event != -1) a.death_event_pending = 1; } }   // tests
-    void set_boss_floor(bool on) { boss_floor_ = on; }   // a boss room: the models of the floor's layout row are the boss and its helpers, created at once
+    void set_boss_floor(bool on) { boss_floor_ = on; }
+    void set_start(double x, double z, double yaw, double y = 30.0);   // where the hero begins a floor whose intro scene put him somewhere (boss rooms)   // a boss room: the models of the floor's layout row are the boss and its helpers, created at once
     void set_boss_handler(std::function<void(int, int)> f) { boss_handler_ = std::move(f); }   // (map, floor): the boss died, the fade is over
     float get_boss_fade() const { return boss_timer_ > 0 ? 1.0f - float(boss_timer_) / 120.0f : (boss_done_ ? 1.0f : 0.0f); }
     void set_atra_handler(std::function<void(dccore::UserStatus &, int)> f) { atra_handler_ = std::move(f); }   // an Atla statue was taken: the entry of the dungeon's table
@@ -220,6 +221,9 @@ public:
     // Scripted input: one entry per tick, [lx, ly, rx, ry, buttons] raw pad bytes.
     void set_script(const Array &ticks);
     void set_use_devices(bool on) { use_devices_ = on; }
+    void set_hold_pad(int lx, int ly, int buttons) { hold_pad_.lx = uint8_t(lx); hold_pad_.ly = uint8_t(ly); hold_pad_.buttons = uint32_t(buttons); hold_pad_on_ = true; }   // tests: the pad every tick after the script (a bot steers with it)
+    dccore::PadRaw hold_pad_;
+    bool hold_pad_on_ = false;
     int get_tick_count() const { return tick_count_; }
     Vector3 get_player_position() const;
     Dictionary get_camera_state() const;
@@ -281,7 +285,15 @@ public:
     Camera3D *get_camera() const { return camera_; }
     DcDungeon *get_floor() const { return floor_; }
     Dictionary get_player_status() const;   // {life, max_life, mode, invuln, dead, game_over}
-    Array get_monster_info() const;       // [{slot, name, pos}] of the monsters on the floor
+    Array get_monster_info() const;
+    Array debug_monster_cols() const;
+    Array debug_player_spheres() const;
+    Array debug_polys_near(double x, double z) const;
+    bool dbg_ev_was_running_ = false; Vector3 dbg_ev_end_pos_; float dbg_ev_end_yaw_ = 0; int dbg_ev_end_tick_ = -1, dbg_ev_end_count_ = 0;   // tests: where the hero stood when the last script event ended
+    Dictionary debug_event_end() const { Dictionary d; d["pos"] = dbg_ev_end_pos_; d["yaw"] = dbg_ev_end_yaw_; d["tick"] = dbg_ev_end_tick_; d["count"] = dbg_ev_end_count_; return d; }   // tests: the collision polygons of the cell around (x, z): [{v0, v1, v2, n, attr}]
+    float dbg_near_[4] = {1e9f, 0, 0, 0};   int dbg_near_slot_ = -1, dbg_near_tick_ = -1;   // tests: the closest a window-open body sphere came to the player (distance, its position)
+    float dbg_best_gap_ = 1e9f; int dbg_best_slot_ = -1, dbg_best_tick_ = -1, dbg_sphere_ticks_ = 0;   // tests: the smallest gap (distance minus radii) between a player sphere and a monster body sphere that was on
+    Dictionary debug_hit_stats() const { Dictionary d; d["gap"] = dbg_best_gap_; d["slot"] = dbg_best_slot_; d["tick"] = dbg_best_tick_; d["sphere_ticks"] = dbg_sphere_ticks_; d["near"] = dbg_near_[0]; d["near_pos"] = Vector3(dbg_near_[1], dbg_near_[2], dbg_near_[3]); d["near_slot"] = dbg_near_slot_; d["near_tick"] = dbg_near_tick_; return d; }     // tests: the player's attack spheres in the hit pool [{pos, r}]       // tests: per monster the body spheres that are on (bone, radius, world position, window), muteki and col_off       // [{slot, name, pos}] of the monsters on the floor
     void teleport(double x, double z, double y = 30.0);   // puts the player (and the camera behind them) at a world position
     void step_ticks(int n);                // advances n ticks immediately using the script / devices
     void override_view(const Vector3 &player_pos, double yaw, const Vector3 &camera_pos, const Vector3 &camera_ref);   // static placement (for comparing with game screenshots)

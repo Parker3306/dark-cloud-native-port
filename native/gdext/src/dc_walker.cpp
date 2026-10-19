@@ -86,6 +86,12 @@ void DcWalker::_bind_methods() {
     ClassDB::bind_method(D_METHOD("is_back_floor"), &DcWalker::is_back_floor);
     ClassDB::bind_method(D_METHOD("has_back_floor"), &DcWalker::has_back_floor);
     ClassDB::bind_method(D_METHOD("debug_swap_floor"), &DcWalker::debug_swap_floor);
+    ClassDB::bind_method(D_METHOD("debug_monster_cols"), &DcWalker::debug_monster_cols);
+    ClassDB::bind_method(D_METHOD("debug_player_spheres"), &DcWalker::debug_player_spheres);
+    ClassDB::bind_method(D_METHOD("debug_polys_near", "x", "z"), &DcWalker::debug_polys_near);
+    ClassDB::bind_method(D_METHOD("debug_event_end"), &DcWalker::debug_event_end);
+    ClassDB::bind_method(D_METHOD("debug_hit_stats"), &DcWalker::debug_hit_stats);
+    ClassDB::bind_method(D_METHOD("set_hold_pad", "lx", "ly", "buttons"), &DcWalker::set_hold_pad);
     ClassDB::bind_method(D_METHOD("coop_revive"), &DcWalker::coop_revive);
     ClassDB::bind_method(D_METHOD("coop_swap_floor"), &DcWalker::debug_swap_floor);
     ClassDB::bind_method(D_METHOD("debug_kill_player"), &DcWalker::debug_kill_player);
@@ -220,11 +226,21 @@ void DcWalker::teleport(double x, double z, double y) {
     apply_state();
 }
 
+void DcWalker::set_start(double x, double z, double yaw, double y) {
+    walker_->place_at(float(x), float(z), float(y));
+    walker_->player.yaw = float(yaw);
+    walker_->camera.angle = walker_->camera.angle_cur = std::atan2(std::sin(float(yaw) + 3.14159265f), std::cos(float(yaw) + 3.14159265f));
+    dccore::camera_step(walker_->camera, 1);
+    for (int i = 0; i < 3; ++i) { walker_->camera.pos[i] = walker_->camera.next_pos[i]; walker_->camera.ref[i] = walker_->camera.next_ref[i]; }
+    apply_state();
+}
+
 void DcWalker::step_ticks(int n) {
     for (int i = 0; i < n; ++i) {
         dccore::PadRaw pad;
         if (size_t(tick_count_) < script_.size()) pad = script_[size_t(tick_count_)];
         else if (use_devices_) pad = read_devices();
+        else if (hold_pad_on_) pad = hold_pad_;
         // The game's order inside one frame: MoveChara (the player), the monsters' Step (AI, damage), the characters' motions, then the life bar.
         const bool ok_now = (pad.buttons & dccore::kPadOK) != 0, ok_down = ok_now && !prev_ok_;
         prev_ok_ = ok_now;
@@ -243,6 +259,11 @@ void DcWalker::step_ticks(int n) {
             continue;
         }
         if (boss_done_) { ++tick_count_; continue; }
+        if (session_) {   // (tests: where did the hero stand when an event ended?)
+            const bool run_now = session_->running();
+            if (dbg_ev_was_running_ && !run_now) { dbg_ev_end_pos_ = Vector3(walker_->player.pos[0], walker_->player.pos[1], walker_->player.pos[2]); dbg_ev_end_yaw_ = walker_->player.yaw; dbg_ev_end_tick_ = tick_count_; ++dbg_ev_end_count_; }
+            dbg_ev_was_running_ = run_now;
+        }
         if (session_ && floor_start_pending_ >= 0 && !session_->running()) {   // the story room's own start script
             const int f = floor_start_pending_;
             floor_start_pending_ = -1;
@@ -328,6 +349,33 @@ void DcWalker::step_ticks(int n) {
             }
             if (fighting_) world_->hold = walker_->combat.unit_hold;
             if (coop_role_ != 2) world_->step_ai();   // (a co-op client's monsters are the host's)
+            {   // (tests: how close did the player's spheres come to a body sphere that was on?)
+                for (const dccore::MonsterActor &m : world_->actors) {
+                    if (m.state == -1 || m.hp < 1 || m.slot != 0) continue;   // (the boss body: slot 0)
+                    for (const dccore::BodyCol &b : m.body_cols) {
+                        if (!b.active) continue;
+                        if (b.win_start != 0.0f && (m.motion.time <= b.win_start || b.win_end < m.motion.time)) continue;
+                        if (b.pos[0] == 0.0f && b.pos[1] == 0.0f && b.pos[2] == 0.0f) continue;   // (not placed yet)
+                        const float d = dccore::vu_dist(b.pos, walker_->player.pos);
+                        if (d < dbg_near_[0]) { dbg_near_[0] = d; dbg_near_[1] = b.pos[0]; dbg_near_[2] = b.pos[1]; dbg_near_[3] = b.pos[2]; dbg_near_slot_ = m.slot; dbg_near_tick_ = tick_count_; }
+                    }
+                }
+                bool any = false;
+                for (const dccore::ColEntry &e : world_->pool.e) {
+                    if (!e.used || (e.target & 2) == 0 || e.owner_kind >= 200) continue;
+                    any = true;
+                    for (const dccore::MonsterActor &m : world_->actors) {
+                        if (m.state == -1 || m.hp < 1 || m.muteki >= 1) continue;
+                        for (const dccore::BodyCol &b : m.body_cols) {
+                            if (!b.active) continue;
+                            if (b.win_start != 0.0f && (m.motion.time <= b.win_start || b.win_end < m.motion.time)) continue;
+                            const float gap = dccore::vu_dist(b.pos, e.pos) - (b.radius + e.radius);
+                            if (gap < dbg_best_gap_) { dbg_best_gap_ = gap; dbg_best_slot_ = m.slot; dbg_best_tick_ = tick_count_; }
+                        }
+                    }
+                }
+                if (any) ++dbg_sphere_ticks_;
+            }
             if (coop_role_ == 1) coop_capture(1);
             if (boss_floor_ && world_->run_script_request >= 0 && boss_timer_ == 0) {   // a boss's death script asked for event 510
                 boss_timer_ = 120;
@@ -804,6 +852,66 @@ void DcWalker::apply_monsters() {
         if (node->get_motion() != a.motion.cur) node->play(a.motion.cur, false);
         node->set_time(a.motion.time);
     }
+}
+
+Array DcWalker::debug_polys_near(double x, double z) const {
+    Array out;
+    if (!dungeon_) return out;
+    for (const dccore::CCPoly &q : dccore::floor_polys_near(*dungeon_, layout_, float(x), float(z), 0)) {
+        Dictionary d;
+        d["v0"] = Vector3(q.v[0][0], q.v[0][1], q.v[0][2]);
+        d["v1"] = Vector3(q.v[1][0], q.v[1][1], q.v[1][2]);
+        d["v2"] = Vector3(q.v[2][0], q.v[2][1], q.v[2][2]);
+        d["n"] = Vector3(q.n[0], q.n[1], q.n[2]);
+        d["attr"] = int(q.attr[0]);
+        out.push_back(d);
+    }
+    return out;
+}
+
+Array DcWalker::debug_player_spheres() const {
+    Array out;
+    if (!world_) return out;
+    for (const dccore::ColEntry &e : world_->pool.e) {
+        if (!e.used || (e.target & 2) == 0) continue;
+        Dictionary d;
+        d["pos"] = Vector3(e.pos[0], e.pos[1], e.pos[2]);
+        d["r"] = e.radius;
+        d["owner"] = e.owner_kind;
+        out.push_back(d);
+    }
+    return out;
+}
+
+Array DcWalker::debug_monster_cols() const {
+    Array out;
+    if (!world_ || !monsters_) return out;
+    for (int i = 0; i < dccore::MonsterUnit::kSlots; ++i) {
+        const dccore::MonsterActor &a = world_->actors[size_t(i)];
+        if (a.state == -1 || !monsters_->slots[size_t(i)].active) continue;
+        Dictionary d;
+        d["slot"] = i;
+        d["name"] = String(monsters_->bases[size_t(monsters_->slots[size_t(i)].base)].entry.stem().c_str());
+        d["hp"] = a.hp;
+        d["muteki"] = a.muteki;
+        d["col_off"] = a.col_off;
+        d["motion"] = a.motion.cur;
+        d["time"] = a.motion.time;
+        d["pos"] = Vector3(a.pos[0], a.pos[1], a.pos[2]);
+        Array cols;
+        for (const dccore::BodyCol &b : a.body_cols) {
+            if (!b.active) continue;
+            Dictionary c;
+            c["bone"] = String(b.bone.c_str());
+            c["r"] = b.radius;
+            c["pos"] = Vector3(b.pos[0], b.pos[1], b.pos[2]);
+            c["win"] = Vector2(b.win_start, b.win_end);
+            cols.push_back(c);
+        }
+        d["cols"] = cols;
+        out.push_back(d);
+    }
+    return out;
 }
 
 Array DcWalker::get_monster_info() const {
