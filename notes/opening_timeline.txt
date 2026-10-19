@@ -1,0 +1,1307 @@
+# opening.scr timeline (WAIT_KEY counted as 2 steps; Step rate 60 Hz; 1416 commands, 125 CAMERA cuts, total 38180 steps = 10:36.33)
+
+== ■初期設定   [0:00.00  step 0]
+  0:00.00    OBJ_DISP 0(Seeda) OFF   // シーダ
+  0:00.00    OBJ_DISP 1(Majin (Dark Genie)) OFF   // 魔人
+  0:00.00    OBJ_DISP 2(Priest) OFF   // 司祭
+  0:00.00    OBJ_DISP 3(Flag) OFF   // フラッグ
+  0:00.00    OBJ_DISP 4(Majin bust-up) OFF   // 魔人Ｂ
+  0:00.00    OBJ_DISP 5(Majin hand / butterfly 2) OFF   // 魔人Ｃ、蝶２
+  0:00.00    OBJ_DISP 6(curse dance leader) ON   // 呪いダンスリーダー
+  0:00.00    OBJ_DISP 7(curse dancers (35)) ON   // 呪いダンサー
+  0:00.00    OBJ_DISP 8(Toan B) OFF   // トアンＢ
+  0:00.00    OBJ_DISP 9(Paige) OFF   // ペイジ
+  0:00.00    OBJ_DISP 10(Rene) OFF   // レネ
+  0:00.00    OBJ_DISP 11(Toan) OFF   // トアン
+  0:00.00    OBJ_DISP 12(Gina) OFF   // ジーナ
+  0:00.00    OBJ_DISP 13(Karl) OFF   // カール
+  0:00.00    OBJ_DISP 14(Ornet) OFF   // オルネット
+  0:00.00    OBJ_DISP 15(Macho) OFF   // マッチョ
+  0:00.00    OBJ_DISP 16(Claude) OFF   // クロード
+  0:00.00    OBJ_DISP 17(Little Macho) OFF   // コマッチョ
+  0:00.00    OBJ_DISP 18(Odd) OFF   // オッド
+  0:00.00    OBJ_DISP 19(village dancer m) OFF   // 村ダンサー男１
+  0:00.00    OBJ_DISP 20(village dancer f) OFF   // 村ダンサー女１
+  0:00.00    OBJ_DISP 21(Spirit King) OFF   // 精霊王
+  0:00.00    OBJ_DISP 22(butterfly) OFF   // 蝶
+
+== ■カット１  全員座ったままダンスを始めている   [0:00.00  step 0]
+  0:00.00  CAMERA #0 0101acp.sne key=0 frames 1..60 speed 0.15 (cut lasts 388 steps = 6.47 s)
+  0:00.00    FADE_IN 0, 2
+
+== ■カット２   [0:06.47  step 388]
+  0:06.47  CAMERA #1 0101bcp.sne key=0 frames 61..150 speed 0.15 (cut lasts 588 steps = 9.80 s)
+
+== ■カット４  ダンスリーダーが曲に合わせて立ち上がる   [0:16.27  step 976]
+  0:16.27  CAMERA #2 0104cp.sne key=2 frames 1..50 speed 0.25 (cut lasts 158 steps = 2.63 s)
+
+== ■カット４Ｂ  ダンスリーダーアップ   [0:18.90  step 1134]
+  0:18.90  CAMERA #3 0104bcp.sne key=3 frames 1..40 speed 0.1 (cut lasts 382 steps = 6.37 s)
+  0:18.90    OBJ_EYE obj=6(curse dance leader) 4 40
+  0:18.90    OBJ_MOUTH obj=6(curse dance leader) 2 40
+
+== ■カット５  次々にダンサーが立ち上がって踊り始める   [0:25.27  step 1516]
+  0:25.27  CAMERA #4 0105cp.sne key=4 frames 1..50 speed 0.22 (cut lasts 222 steps = 3.70 s)
+  0:28.97    OBJ_DISP 2(Priest) ON
+  0:28.97    OBJ_DISP 3(Flag) ON
+  0:28.97    OBJ_STEP obj=2(Priest) 1
+  0:28.97    OBJ_STEP obj=3(Flag) 1
+
+== ■カット７  フラッグ＆司祭アップ、会話   [0:28.97  step 1738]
+  0:28.97  CAMERA #5 0107cp.sne key=6 frames 151..320 speed 0.25 (cut lasts 662 steps = 11.03 s)
+  0:28.97    OBJ_MOVE obj=2(Priest) 6
+  0:28.97    OBJ_MOVE obj=3(Flag) 6
+  0:28.97    OBJ_MOTION obj=2(Priest) 1
+  0:28.97    OBJ_MOTION obj=3(Flag) 1
+  0:30.20    OBJ_STEP obj=2(Priest) 0.05
+  0:30.20    OBJ_STEP obj=3(Flag) 0.05
+  0:30.20    OBJ_TALK obj=3(Flag) msg=1 frames=40 pos=(300,308) tail=(430,157)  "You've gathered quite a few of them."   // フラッグ「よくかき集めたものだな」
+  0:30.20    OBJ_EYE obj=3(Flag) 3 20   // フラッグ、目左
+  0:33.23    OBJ_TALK obj=2(Priest) msg=2 frames=70 pos=(174,338) tail=(197,230)  "I had a hard time finding / dancers with the right / qualifications."   // 司祭「はい、マスター級～～」
+  0:33.23    OBJ_EYE obj=2(Priest) 4 40   // 司祭、目右
+  0:33.23    OBJ_MOTION obj=2(Priest) 3
+  0:38.80    OBJ_MOTION obj=2(Priest) 4
+  0:38.80    OBJ_MOTION obj=3(Flag) 0
+  0:38.80    NEXT_MES 80
+  0:38.80    OBJ_TALK obj=2(Priest) msg=3 frames=65 pos=(210,338) tail=(197,230)  "Look at them.\pTheir dance of blood..."   // 司祭「ごらんください」
+  0:38.80    OBJ_EYE obj=2(Priest) 4 18   // 司祭、目右
+  0:39.37    OBJ_MOTION obj=2(Priest) 5
+  0:39.37    OBJ_MOTION obj=3(Flag) 2
+
+== ■カット８  フラッグ、ダンサーの方を向く   [0:40.00  step 2400]
+  0:40.00  CAMERA #6 0108cp.sne key=7 frames 321..400 speed 0.4 (cut lasts 186 steps = 3.10 s)
+  0:40.00    OBJ_MOVE obj=2(Priest) 7
+  0:40.00    OBJ_MOVE obj=3(Flag) 7
+  0:40.00    OBJ_MOTION obj=3(Flag) 8
+  0:41.87    MESSAGE msg=5 frames=105 pos=(180,350) tail=(0,0)  "Mixing the blood of witches with that / of humans is the key to breaking  / the seal."   // 司祭「その血を触媒とすれば～」
+
+== ■カット９  カメラ、ダンスリーダーの前を横切る   [0:43.10  step 2586]
+  0:43.10  CAMERA #7 0109cp.sne key=8 frames 411..500 speed 0.4 (cut lasts 184 steps = 3.07 s)
+  0:43.10    OBJ_MOVE obj=2(Priest) 8
+  0:43.10    OBJ_MOVE obj=3(Flag) 8
+  0:43.10    OBJ_DISP 2(Priest) OFF
+  0:43.10    OBJ_DISP 3(Flag) OFF
+
+== ■カット１０  フラッグ、司祭アップ、会話   [0:46.17  step 2770]
+  0:46.17  CAMERA #8 0110cp.sne key=9 frames 501..650 speed 0.25 (cut lasts 564 steps = 9.40 s)
+  0:46.17    MES_CLR 
+  0:46.17    OBJ_DISP 2(Priest) ON
+  0:46.17    OBJ_DISP 3(Flag) ON
+  0:46.17    OBJ_MOVE obj=2(Priest) 9
+  0:46.17    OBJ_MOVE obj=3(Flag) 9
+  0:46.17    OBJ_MOTION obj=3(Flag) 9
+  0:46.17    OBJ_MOTION obj=2(Priest) 6
+  0:46.73    OBJ_TALK obj=2(Priest) msg=6 frames=55 pos=(190,358) tail=(197,230)  "However, I do have some problems..."   // 司祭「ただ、いささか問題もございまして」
+  0:46.73    OBJ_EYE obj=2(Priest) 4 30   // 司祭、目右
+  0:47.17    OBJ_MOTION obj=2(Priest) 7
+  0:47.17    OBJ_MOTION obj=3(Flag) 1
+  0:49.40    OBJ_MOTION obj=3(Flag) 4
+  0:49.40    OBJ_EYE obj=3(Flag) 3 85
+  0:50.10    OBJ_TALK obj=3(Flag) msg=7 frames=20 pos=(292,292) tail=(430,157)  "Problems?"   // フラッグ「問題？」
+  0:51.33    OBJ_EYE obj=2(Priest) 6 65
+  0:51.33    OBJ_TALK obj=2(Priest) msg=8 frames=65 pos=(250,326) tail=(197,230)  "In order to procure good material, / you do need adequate..."   // 司祭「よい物を揃えるには～」
+
+== ■カット１１  シーダ登場   [0:55.57  step 3334]
+  0:55.57  CAMERA #9 0111cp.sne key=10 frames 545..620 speed 0.2 (cut lasts 369 steps = 6.15 s)
+  0:55.57    OBJ_DISP 0(Seeda) ON
+  0:55.57    OBJ_EYE obj=0(Seeda) 3 75
+  0:55.57    OBJ_MOVE obj=0(Seeda) 10
+  0:55.57    OBJ_MOVE obj=2(Priest) 10
+  0:55.57    OBJ_MOVE obj=3(Flag) 10
+  0:55.57    OBJ_MOTION obj=2(Priest) 7
+  0:55.57    OBJ_MOTION obj=3(Flag) 1
+  0:55.57    OBJ_MOTION obj=0(Seeda) 0
+  0:55.57    OBJ_TALK obj=3(Flag) msg=9 frames=50 pos=(300,300) tail=(0,0)  "I see. I'll pay you extra. That / should solve your problem, huh."   // フラッグ「わかった。報酬は割増～」
+  0:55.57    OBJ_EYE obj=3(Flag) 3 25   // フラッグ、目左
+  0:56.18    OBJ_EYE obj=0(Seeda) 4 1
+  0:56.22    OBJ_EYE obj=0(Seeda) 2 1
+  0:56.25    OBJ_EYE obj=0(Seeda) 4 1
+  0:56.28    OBJ_EYE obj=0(Seeda) 3 75
+  0:56.28    OBJ_MOTION2 obj=0(Seeda) 1 2
+  0:59.07    OBJ_TALK obj=2(Priest) msg=10 frames=25 pos=(400,340) tail=(0,0)  "Yes, sir.  Thank you."   // 司祭「恐れ入ります」
+  0:59.07    OBJ_EYE obj=2(Priest) 4 15   // 司祭、目右
+  1:01.02    OBJ_MOTION obj=0(Seeda) 5
+
+== ■カット１２  フラッグ、司祭、リーダーの横あたりで内側を向く   [1:01.72  step 3703]
+  1:01.72  CAMERA #10 0112cp.sne key=11 frames 640..680 speed 0.4 (cut lasts 90 steps = 1.50 s)
+  1:01.72    OBJ_DISP 0(Seeda) OFF
+  1:01.72    OBJ_MOVE obj=2(Priest) 11
+  1:01.72    OBJ_MOVE obj=3(Flag) 11
+  1:01.72    OBJ_MOTION obj=2(Priest) 1
+  1:01.72    OBJ_MOTION obj=3(Flag) 1
+  1:02.92    OBJ_MOTION obj=3(Flag) 5
+  1:03.07    OBJ_MOTION obj=2(Priest) 0
+
+== ■カット１３  フラッグ、司祭、アップ、会話   [1:03.22  step 3793]
+  1:03.22  CAMERA #11 0113cp.sne key=12 frames 681..750 speed 0.25 (cut lasts 268 steps = 4.47 s)
+  1:03.22    OBJ_MOVE obj=2(Priest) 12
+  1:03.22    OBJ_MOVE obj=3(Flag) 12
+  1:03.22    OBJ_MOTION obj=2(Priest) 0
+  1:03.22    OBJ_MOTION obj=3(Flag) 5
+  1:03.22    OBJ_TALK obj=3(Flag) msg=11 frames=20 pos=(266,298) tail=(462,163)  "So, when will it happen?"   // フラッグ「それで後どれくらいだ」
+  1:03.22    OBJ_EYE obj=3(Flag) 3 20   // フラッグ、目右
+  1:03.22    OBJ_MOUTH obj=2(Priest) 6 30
+  1:04.45    OBJ_MOTION2 obj=2(Priest) 8 0
+  1:04.45    OBJ_EYE obj=2(Priest) 4 20   // 司祭、目右
+  1:04.45    OBJ_TALK obj=2(Priest) msg=12 frames=50 pos=(152,332) tail=(156,250)  "Very soon, sir. / Let us enjoy the ceremony / till it is time."   // 司祭「まもなくでございます」
+
+== ■カット１４  ダンスパート   [1:07.68  step 4061]
+  1:07.68  CAMERA #12 0114acp.sne key=39 frames 1..100 speed 0.1 (cut lasts 1012 steps = 16.87 s)
+  1:07.68    MES_CLR 
+  1:07.68    OBJ_DISP 0(Seeda) OFF
+  1:07.68    OBJ_DISP 2(Priest) OFF
+  1:07.68    OBJ_DISP 3(Flag) OFF
+  1:07.68    OBJ_MOVE obj=6(curse dance leader) 39
+  1:07.68    OBJ_MOVE obj=7(curse dancers (35)) 39
+
+== ■ダンスシーン -----------------------------------------------   [1:24.55  step 5073]
+  1:24.55  CAMERA #13 0114bcp.sne key=40 frames 100..200 speed 0.14 (cut lasts 701 steps = 11.68 s)
+  1:24.55    OBJ_DISP 2(Priest) OFF
+  1:24.55    OBJ_DISP 3(Flag) OFF
+  1:24.55    OBJ_MOVE obj=6(curse dance leader) 40
+  1:24.55    OBJ_MOVE obj=7(curse dancers (35)) 40
+  1:36.23  CAMERA #14 0114ccp.sne key=41 frames 201..250 speed 0.07 (cut lasts 673 steps = 11.22 s)
+  1:36.23    OBJ_DISP 2(Priest) OFF
+  1:36.23    OBJ_DISP 3(Flag) OFF
+  1:36.23    OBJ_MOVE obj=6(curse dance leader) 41
+  1:36.23    OBJ_MOVE obj=7(curse dancers (35)) 41
+  1:47.45  CAMERA #15 0114dcp.sne key=42 frames 201..250 speed 0.1 (cut lasts 482 steps = 8.03 s)
+  1:47.45    OBJ_DISP 2(Priest) OFF
+  1:47.45    OBJ_DISP 3(Flag) OFF
+  1:47.45    OBJ_MOVE obj=6(curse dance leader) 42
+  1:47.45    OBJ_MOVE obj=7(curse dancers (35)) 42
+  1:55.48  CAMERA #16 0114ecp.sne key=43 frames 201..250 speed 0.1 (cut lasts 482 steps = 8.03 s)
+  1:55.48    OBJ_DISP 2(Priest) OFF
+  1:55.48    OBJ_DISP 3(Flag) OFF
+  1:55.48    OBJ_MOVE obj=6(curse dance leader) 43
+  1:55.48    OBJ_MOVE obj=7(curse dancers (35)) 43
+
+== ■追加カット１（Ｇ）------------------------------------------   [2:03.52  step 7411]
+  2:03.52  CAMERA #17 0114gcp.sne key=45 frames 201..250 speed 0.15 (cut lasts 322 steps = 5.37 s)
+  2:03.52    OBJ_DISP 2(Priest) ON
+  2:03.52    OBJ_DISP 3(Flag) ON
+  2:03.52    OBJ_MOVE obj=6(curse dance leader) 45
+  2:03.52    OBJ_MOVE obj=7(curse dancers (35)) 45
+  2:03.52    OBJ_MOVE obj=2(Priest) 45
+  2:03.52    OBJ_MOVE obj=3(Flag) 45
+  2:03.52    OBJ_TALK obj=2(Priest) msg=36 frames=35 pos=(86,86) tail=(182,273)  "(no such message in this bank)"
+
+== ■追加カット２（Ｈ）------------------------------------------   [2:08.88  step 7733]
+  2:08.88  CAMERA #18 0114hcp.sne key=46 frames 201..250 speed 0.1 (cut lasts 492 steps = 8.20 s)
+  2:08.88    OBJ_DISP 2(Priest) ON
+  2:08.88    OBJ_DISP 3(Flag) ON
+  2:08.88    OBJ_MOVE obj=6(curse dance leader) 46
+  2:08.88    OBJ_MOVE obj=7(curse dancers (35)) 46
+  2:08.88    OBJ_MOVE obj=2(Priest) 46
+  2:08.88    OBJ_MOVE obj=3(Flag) 46
+  2:08.88    NEXT_MES 300
+  2:08.88    OBJ_TALK obj=3(Flag) msg=37 frames=51 pos=(262,72) tail=(0,0)  "(no such message in this bank)"
+
+== ■追加カット３（Ｉ）------------------------------------------   [2:17.08  step 8225]
+  2:17.08  CAMERA #19 0114icp.sne key=47 frames 201..250 speed 0.1 (cut lasts 482 steps = 8.03 s)
+  2:17.08    MES_CLR 
+  2:17.08    OBJ_DISP 2(Priest) OFF
+  2:17.08    OBJ_DISP 3(Flag) OFF
+  2:17.08    OBJ_MOVE obj=6(curse dance leader) 47
+  2:17.08    OBJ_MOVE obj=7(curse dancers (35)) 47
+  2:17.08    OBJ_MOVE obj=2(Priest) 47
+  2:17.08    OBJ_MOVE obj=3(Flag) 47
+
+== ■追加カット４（Ｊ）------------------------------------------   [2:25.12  step 8707]
+  2:25.12  CAMERA #20 0114jcp.sne key=48 frames 201..250 speed 0.07 (cut lasts 659 steps = 10.98 s)
+  2:25.12    OBJ_DISP 2(Priest) ON
+  2:25.12    OBJ_DISP 3(Flag) ON
+  2:25.12    OBJ_MOVE obj=6(curse dance leader) 48
+  2:25.12    OBJ_MOVE obj=7(curse dancers (35)) 48
+  2:25.12    OBJ_MOVE obj=2(Priest) 48
+  2:25.12    OBJ_MOVE obj=3(Flag) 48
+  2:25.12    NEXT_MES 350
+  2:25.12    OBJ_TALK obj=2(Priest) msg=38 frames=50 pos=(276,330) tail=(430,130)  "(no such message in this bank)"
+
+== ■追加カット５（Ｋ）------------------------------------------   [2:36.10  step 9366]
+  2:36.10  CAMERA #21 0114kcp.sne key=49 frames 201..250 speed 0.1 (cut lasts 232 steps = 3.87 s)
+  2:36.10    OBJ_DISP 2(Priest) ON
+  2:36.10    OBJ_DISP 3(Flag) ON
+  2:36.10    OBJ_MOVE obj=6(curse dance leader) 49
+  2:36.10    OBJ_MOVE obj=7(curse dancers (35)) 49
+  2:36.10    OBJ_MOVE obj=2(Priest) 49
+  2:36.10    OBJ_MOVE obj=3(Flag) 49
+  2:36.10    OBJ_TALK obj=3(Flag) msg=39 frames=25 pos=(382,66) tail=(260,166)  "(no such message in this bank)"
+
+== ■ダンスシーン -----------------------------------------------   [2:39.97  step 9598]
+  2:39.97  CAMERA #22 0114f1cp.sne key=44 frames 201..248 speed 0.08 (cut lasts 577 steps = 9.62 s)
+  2:39.97    MES_CLR 
+  2:39.97    OBJ_DISP 2(Priest) OFF
+  2:39.97    OBJ_DISP 3(Flag) OFF
+  2:39.97    OBJ_MOVE obj=6(curse dance leader) 44
+  2:39.97    OBJ_MOVE obj=7(curse dancers (35)) 44
+  2:49.58  CAMERA #23 0114f2cp.sne key=44 frames 249..300 speed 0.06 (cut lasts 803 steps = 13.38 s)
+  2:49.58    OBJ_DISP 2(Priest) OFF
+  2:49.58    OBJ_DISP 3(Flag) OFF
+  2:49.58    OBJ_MOVE obj=6(curse dance leader) 44
+  2:49.58    OBJ_MOVE obj=7(curse dancers (35)) 44
+  3:00.72    SPRITE 2
+
+== ■カット１５  壷から煙   [3:02.97  step 10978]
+  3:02.97  CAMERA #24 0115cp.sne key=14 frames 10..80 speed 0.25 (cut lasts 274 steps = 4.57 s)
+  3:02.97    OBJ_DISP 6(curse dance leader) OFF
+  3:02.97    OBJ_DISP 7(curse dancers (35)) OFF
+  3:02.97    OBJ_MOVE obj=2(Priest) 18
+  3:02.97    OBJ_MOVE obj=3(Flag) 18
+  3:07.53    LOAD_OBJ 6, 4
+
+== ■カット１６  フラッグ、司祭アップ、会話   [3:07.53  step 11252]
+  3:07.53  CAMERA #25 0116cp.sne key=15 frames 10..60 speed 0.19 (cut lasts 236 steps = 3.93 s)
+  3:07.53    OBJ_DISP 2(Priest) ON
+  3:07.53    OBJ_DISP 3(Flag) ON
+  3:07.53    OBJ_MOVE obj=2(Priest) 18
+  3:07.53    OBJ_MOVE obj=3(Flag) 18
+  3:07.53    OBJ_MOTION obj=3(Flag) 1
+  3:07.53    OBJ_TALK obj=3(Flag) msg=13 frames=25 pos=(438,60) tail=(305,172)  "So now is the time..."   // フラッグ「いよいよか」
+  3:09.13    OBJ_MOTION obj=3(Flag) 0
+  3:09.68    OBJ_TALK obj=2(Priest) msg=14 frames=19 pos=(478,304) tail=(382,222)  "Yes sir, so it seems."   // 司祭「そのようで」
+
+== ■カット１７  煙がだんだん形に   [3:11.47  step 11488]
+  3:11.47  CAMERA #26 0117cp.sne key=16 frames 10..60 speed 0.25 (cut lasts 194 steps = 3.23 s)
+  3:11.47    OBJ_MOVE obj=2(Priest) 18
+  3:11.47    OBJ_MOVE obj=3(Flag) 18
+  3:11.47    OBJ_MOTION obj=2(Priest) 18
+  3:11.47    OBJ_MOTION obj=3(Flag) 16
+
+== ■カット１８  カメラ下から上昇、魔人登場   [3:14.70  step 11682]
+  3:14.70  CAMERA #27 0118cp.sne key=17 frames 10..80 speed 0.25 (cut lasts 274 steps = 4.57 s)
+  3:14.70    OBJ_DISP 1(Majin (Dark Genie)) ON
+  3:14.70    OBJ_MOTION obj=1(Majin (Dark Genie)) 0
+  3:14.70    OBJ_MOVE obj=1(Majin (Dark Genie)) 17
+  3:14.70    OBJ_STEP obj=1(Majin (Dark Genie)) 1
+  3:14.70    OBJ_STEP obj=2(Priest) 1
+  3:14.70    OBJ_STEP obj=3(Flag) 1
+
+== ■カット１９  魔人着地   [3:19.27  step 11956]
+  3:19.27  CAMERA #28 0119cp.sne key=18 frames 47..110 speed 0.2 (cut lasts 271 steps = 4.52 s)
+  3:19.27    OBJ_MOVE obj=1(Majin (Dark Genie)) 18
+  3:19.27    OBJ_MOVE obj=2(Priest) 18
+  3:19.27    OBJ_MOVE obj=3(Flag) 18
+  3:19.27    OBJ_MOTION obj=1(Majin (Dark Genie)) 5
+  3:19.28    OBJ_MOTION obj=2(Priest) 10
+  3:19.28    OBJ_MOTION obj=3(Flag) 7
+  3:19.48    OBJ_MOTION obj=1(Majin (Dark Genie)) 1
+  3:19.68    OBJ_STEP obj=2(Priest) 0.05
+  3:19.68    OBJ_STEP obj=3(Flag) 0.05
+  3:19.68    SPRITE 3
+  3:19.68    SE 0, 40, 21, 127
+  3:20.55    OBJ_STEP obj=1(Majin (Dark Genie)) 0.05
+  3:20.55    OBJ_MOTION obj=2(Priest) 9
+  3:20.55    OBJ_MOTION obj=3(Flag) 6
+  3:21.75    OBJ_MOTION obj=1(Majin (Dark Genie)) 5
+
+== ■カット１９Ｂ  魔人   [3:23.78  step 12227]
+  3:23.78  CAMERA #29 0119bcp.sne key=19 frames 110..150 speed 0.17 (cut lasts 215 steps = 3.58 s)
+  3:23.78    OBJ_MOVE obj=1(Majin (Dark Genie)) 19
+  3:23.78    OBJ_MOVE obj=2(Priest) 19
+  3:23.78    OBJ_MOVE obj=3(Flag) 19
+  3:24.60    OBJ_STEP obj=1(Majin (Dark Genie)) 1
+  3:24.60    OBJ_MOTION2 obj=1(Majin (Dark Genie)) 2 3
+  3:24.60    SE 0, 40, 22, 127
+  3:27.37    OBJ_STEP obj=1(Majin (Dark Genie)) 0.05
+
+== ■カット２０  フラッグ、司祭、上からのアングルで   [3:27.37  step 12442]
+  3:27.37  CAMERA #30 0120cp.sne key=20 frames 10..90 speed 0.3 (cut lasts 262 steps = 4.37 s)
+  3:27.37    OBJ_MOVE obj=1(Majin (Dark Genie)) 20
+  3:27.37    OBJ_MOVE obj=2(Priest) 20
+  3:27.37    OBJ_MOVE obj=3(Flag) 20
+  3:27.37    OBJ_MOTION obj=1(Majin (Dark Genie)) 5
+  3:27.37    OBJ_MOTION obj=2(Priest) 9
+  3:27.37    OBJ_MOTION obj=3(Flag) 6
+  3:27.37    OBJ_TALK obj=3(Flag) msg=15 frames=25 pos=(294,312) tail=(220,188)  "Wha? This is.... / the Genie?  The Dark Genie?"   // フラッグ「こいつか？」
+
+== ■カット２１  フラッグ、司祭、アップ＆会話   [3:31.73  step 12704]
+  3:31.73  CAMERA #31 0121cp.sne key=21 frames 91..180 speed 0.35 (cut lasts 249 steps = 4.15 s)
+  3:31.73    OBJ_MOVE obj=1(Majin (Dark Genie)) 21
+  3:31.73    OBJ_MOVE obj=2(Priest) 21
+  3:31.73    OBJ_MOVE obj=3(Flag) 21
+  3:31.73    OBJ_TALK obj=2(Priest) msg=17 frames=60 pos=(96,342) tail=(358,275)  "Well. It's quite different than I / imagined."   // 司祭「うーん～」
+  3:34.05    OBJ_EYE obj=3(Flag) 6 60
+  3:34.05    OBJ_MOUTH obj=3(Flag) 4 60
+
+== ■カット２２  魔人、ベルト締めなおす   [3:35.88  step 12953]
+  3:35.88  CAMERA #32 0122cp.sne key=22 frames 181..250 speed 0.5 (cut lasts 138 steps = 2.30 s)
+  3:35.88    OBJ_MOVE obj=1(Majin (Dark Genie)) 22
+  3:35.88    OBJ_MOVE obj=2(Priest) 22
+  3:35.88    OBJ_MOVE obj=3(Flag) 22
+  3:35.88    OBJ_MOTION obj=1(Majin (Dark Genie)) 6
+  3:35.88    SE 0, 40, 29, 127
+
+== ■カット２３  魔人、アップ、あくび   [3:38.18  step 13091]
+  3:38.18  CAMERA #33 0123cp.sne key=23 frames 251..300 speed 0.2 (cut lasts 234 steps = 3.90 s)
+  3:38.18    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  3:38.18    OBJ_DISP 4(Majin bust-up) ON
+  3:38.18    OBJ_MOVE obj=4(Majin bust-up) 23
+  3:38.18    OBJ_MOVE obj=2(Priest) 23
+  3:38.18    OBJ_MOVE obj=3(Flag) 23
+  3:38.18    OBJ_MOTION2 obj=4(Majin bust-up) 2 0
+  3:38.18    SE 0, 40, 23, 127
+  3:40.55    OBJ_DISP 0(Seeda) ON
+  3:40.55    OBJ_MOTION obj=0(Seeda) 3
+  3:42.08    LOAD_OBJ 4, 5
+
+== ■カット２４  シーダ、柱の影から   [3:42.08  step 13325]
+  3:42.08  CAMERA #34 0124cp.sne key=24 frames 10..50 speed 0.3 (cut lasts 128 steps = 2.13 s)
+  3:42.08    OBJ_DISP 1(Majin (Dark Genie)) ON
+  3:42.08    OBJ_DISP 4(Majin bust-up) OFF
+  3:42.08    OBJ_MOVE obj=0(Seeda) 24
+  3:42.08    OBJ_MOVE obj=1(Majin (Dark Genie)) 24
+  3:42.08    OBJ_MOVE obj=2(Priest) 24
+  3:42.08    OBJ_MOVE obj=3(Flag) 24
+  3:42.08    OBJ_MOTION obj=1(Majin (Dark Genie)) 6
+  3:42.08    SE 0, 40, 29, 100
+  3:42.08    OBJ_MOTION obj=0(Seeda) 3
+
+== ■カット２５  シーダ、アップ   [3:44.22  step 13453]
+  3:44.22  CAMERA #35 0125cp.sne key=25 frames 51..100 speed 0.25 (cut lasts 194 steps = 3.23 s)
+  3:44.22    OBJ_MOTION obj=1(Majin (Dark Genie)) 7
+  3:44.22    OBJ_MOTION obj=0(Seeda) 4
+  3:44.22    OBJ_TALK obj=0(Seeda) msg=18 frames=30 pos=(118,320) tail=(358,244)  "The ancient Dark Genie... / This is it?!"   // シーダ「バカな…～」
+
+== ■カット２６  魔人あおり、会話   [3:47.45  step 13647]
+  3:47.45  CAMERA #36 0126cp.sne key=26 frames 301..350 speed 0.25 (cut lasts 194 steps = 3.23 s)
+  3:47.45    OBJ_TALK obj=1(Majin (Dark Genie)) msg=19 frames=30 pos=(88,178) tail=(336,52)  "Hey! Who are you guys?"   // 魔人「ところでさ～」
+  3:47.45    OBJ_MOTION obj=1(Majin (Dark Genie)) 9
+
+== ■カット２７  フラッグ、司祭顔を見合わせる   [3:50.68  step 13841]
+  3:50.68  CAMERA #37 0120cp.sne key=27 frames 10..90 speed 0.4 (cut lasts 197 steps = 3.28 s)
+  3:50.68    OBJ_MOVE obj=1(Majin (Dark Genie)) 27
+  3:50.68    OBJ_MOVE obj=2(Priest) 27
+  3:50.68    OBJ_MOVE obj=3(Flag) 27
+  3:50.68    OBJ_MOTION2 obj=2(Priest) 11 12
+  3:50.68    OBJ_MOTION2 obj=3(Flag) 11 12
+  3:50.68    MESSAGE msg=20 frames=30 pos=(268,62) tail=(0,0)  "..."   // 「・・・」
+
+== ■カット２８  前へ歩いていくフラッグ   [3:53.97  step 14038]
+  3:53.97  CAMERA #38 0128cp.sne key=28 frames 351..370 speed 0.05 (cut lasts 362 steps = 6.03 s)
+  3:53.97    OBJ_MOVE obj=1(Majin (Dark Genie)) 28
+  3:53.97    OBJ_MOVE obj=2(Priest) 28
+  3:53.97    OBJ_MOVE obj=3(Flag) 28
+  3:53.97    OBJ_MOTION obj=3(Flag) 10
+  3:53.97    NEXT_MES 200
+  3:53.97    OBJ_TALK obj=3(Flag) msg=21 frames=20 pos=(94,328) tail=(242,110)  "Welcome back, Genie of darkness / I broke the seal and released you.\pTherefore, I am your master."   // フラッグ「私だ～」
+
+== ■カット２９  カメラ上からのアングル   [4:00.00  step 14400]
+  4:00.00  CAMERA #39 0129cp.sne key=29 frames 351..370 speed 0.15 (cut lasts 122 steps = 2.03 s)
+  4:00.00    MES_CLR 
+  4:00.00    OBJ_MOVE obj=1(Majin (Dark Genie)) 29
+  4:00.00    OBJ_MOVE obj=2(Priest) 29
+  4:00.00    OBJ_MOVE obj=3(Flag) 29
+  4:00.00    OBJ_MOTION obj=3(Flag) 10
+  4:00.00    OBJ_MOTION obj=2(Priest) 9
+
+== ■カット３０  魔人アップ、「！」マーク   [4:02.03  step 14522]
+  4:02.03  CAMERA #40 0126cp.sne key=26 frames 301..350 speed 0.025 (cut lasts 362 steps = 6.03 s)
+  4:02.03    OBJ_TALK obj=1(Majin (Dark Genie)) msg=22 frames=11 pos=(72,296) tail=(344,52)  "Oh. Is that right...? / Whatever. Fine."   // 魔人「わかった～」
+  4:02.03    OBJ_MOTION obj=1(Majin (Dark Genie)) 9
+  4:02.03    OBJ_MOTION obj=3(Flag) 6
+  4:08.07  CAMERA #41 0130cp.sne key=30 frames 351..370 speed 0.025 (cut lasts 204 steps = 3.40 s)
+  4:08.07    MES_CLR 
+  4:08.07    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  4:08.07    OBJ_DISP 4(Majin bust-up) ON
+  4:08.07    OBJ_MOVE obj=4(Majin bust-up) 30
+  4:08.07    OBJ_MOVE obj=2(Priest) 30
+  4:08.07    OBJ_MOVE obj=3(Flag) 30
+  4:08.07    SE 0, 40, 28, 127
+  4:08.07    OBJ_MOTION obj=4(Majin bust-up) 4
+  4:10.10    SPRITE 1
+  4:10.10    SE 0, 40, 30, 127
+  4:11.47    SPRITE 0
+
+== ■カット３１  魔人「ちょっと待った」   [4:11.47  step 15088]
+  4:11.47  CAMERA #42 0126cp.sne key=31 frames 301..350 speed 0.25 (cut lasts 308 steps = 5.13 s)
+  4:11.47    OBJ_DISP 1(Majin (Dark Genie)) ON
+  4:11.47    OBJ_DISP 4(Majin bust-up) OFF
+  4:11.47    OBJ_MOVE obj=1(Majin (Dark Genie)) 31
+  4:11.47    OBJ_MOVE obj=2(Priest) 31
+  4:11.47    OBJ_MOVE obj=3(Flag) 31
+  4:11.47    OBJ_MOTION obj=3(Flag) 6
+  4:11.47    NEXT_MES 160
+  4:11.47    OBJ_TALK obj=1(Majin (Dark Genie)) msg=23 frames=80 pos=(80,156) tail=(340,74)  "Grrr. Yes, that's right!! / I haven't eaten for 400 years.\pDarn, I have to eat something! / I need food..., food..."   // 魔人「ちょっと待った～」
+  4:11.47    OBJ_MOTION obj=1(Majin (Dark Genie)) 8
+
+== ■カット３２  キョロキョロする魔人～司祭へズーム   [4:16.60  step 15396]
+  4:16.60  CAMERA #43 0132cp.sne key=32 frames 406..480 speed 0.25 (cut lasts 282 steps = 4.70 s)
+  4:16.60    MES_CLR 
+  4:16.60    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  4:16.60    OBJ_DISP 5(Majin hand / butterfly 2) ON
+  4:16.60    OBJ_STEP obj=5(Majin hand / butterfly 2) 1
+  4:16.60    OBJ_MOVE obj=2(Priest) 32
+  4:16.60    OBJ_MOVE obj=3(Flag) 32
+  4:16.60    OBJ_MOVE obj=5(Majin hand / butterfly 2) 32
+  4:16.60    OBJ_MOTION2 obj=5(Majin hand / butterfly 2) 1 3
+  4:19.50    OBJ_MOTION2 obj=2(Priest) 13 17
+  4:19.50    OBJ_MOTION obj=3(Flag) 13
+  4:20.07    OBJ_TALK obj=5(Majin hand / butterfly 2) msg=35 frames=25 pos=(92,309) tail=(344,436)  "(no such message in this bank)"
+
+== ■カット３２Ｂ  司祭へアップ１段階め   [4:21.30  step 15678]
+  4:21.30  CAMERA #44 0132bcp.sne key=33 frames 471..480 speed 0.25 (cut lasts 34 steps = 0.57 s)
+  4:21.30    OBJ_MOVE obj=1(Majin (Dark Genie)) 33
+  4:21.30    OBJ_MOVE obj=2(Priest) 33
+  4:21.30    OBJ_MOVE obj=3(Flag) 33
+  4:21.30    OBJ_EYE obj=2(Priest) 8 10
+  4:21.30    OBJ_MOUTH obj=2(Priest) 7 10
+
+== ■カット３２Ｃ  司祭へアップ２段階め   [4:21.87  step 15712]
+  4:21.87  CAMERA #45 0132ccp.sne key=34 frames 481..490 speed 0.1 (cut lasts 73 steps = 1.22 s)
+  4:21.87    OBJ_MOVE obj=1(Majin (Dark Genie)) 34
+  4:21.87    OBJ_MOVE obj=2(Priest) 34
+  4:21.87    OBJ_MOVE obj=3(Flag) 34
+  4:21.87    MESSAGE msg=24 frames=10 pos=(512,106) tail=(302,230)  "Huh?"   // 司祭「へ！？」
+  4:21.87    OBJ_EYE obj=2(Priest) 9 10
+  4:21.87    OBJ_MOUTH obj=2(Priest) 8 10
+  4:21.87    OBJ_STEP obj=2(Priest) 1
+  4:21.87    OBJ_STEP obj=5(Majin hand / butterfly 2) 0.5
+  4:21.87    OBJ_MOTION obj=5(Majin hand / butterfly 2) 4
+  4:21.88    OBJ_DISP 5(Majin hand / butterfly 2) OFF
+
+== ■カット３３  魔人につかまれる司祭   [4:23.08  step 15785]
+  4:23.08  CAMERA #46 0133cp.sne key=35 frames 295..325 speed 0.1 (cut lasts 228 steps = 3.80 s)
+  4:23.08    MES_CLR 
+  4:23.08    OBJ_MOVE obj=2(Priest) 35
+  4:23.08    OBJ_MOVE obj=3(Flag) 35
+  4:23.08    OBJ_MOVE obj=5(Majin hand / butterfly 2) 35
+  4:23.08    OBJ_MOTION2 obj=2(Priest) 14 15
+  4:23.45    OBJ_MOTION2 obj=3(Flag) 14 15
+  4:23.65    OBJ_DISP 5(Majin hand / butterfly 2) ON
+  4:23.65    OBJ_MOTION obj=5(Majin hand / butterfly 2) 2
+  4:23.85    OBJ_STEP obj=4(Majin bust-up) 1
+  4:23.85    OBJ_STEP obj=2(Priest) 1
+
+== ■カット３４  魔人、司祭を食べる   [4:26.88  step 16013]
+  4:26.88  CAMERA #47 0134cp.sne key=36 frames 120..205 speed 0.1 (cut lasts 842 steps = 14.03 s)
+  4:26.88    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  4:26.88    OBJ_DISP 4(Majin bust-up) ON
+  4:26.88    OBJ_DISP 5(Majin hand / butterfly 2) OFF
+  4:26.88    OBJ_STEP obj=4(Majin bust-up) 0.5
+  4:26.88    OBJ_STEP obj=2(Priest) 1
+  4:26.88    OBJ_MOVE obj=4(Majin bust-up) 36
+  4:26.88    OBJ_MOVE obj=2(Priest) 36
+  4:26.88    OBJ_MOTION obj=4(Majin bust-up) 5
+  4:26.88    OBJ_MOTION obj=2(Priest) 16
+  4:28.25  SCENE_LOAD 1  (stream norn/norn.pak)
+  4:28.25    MESSAGE msg=25 frames=25 pos=(100,320) tail=(100,200)  "Waaaa, ugghhhh, stop it. /   Heeeelp!!!"   // 司祭「うあああ～」
+  4:30.45    SE 0, 40, 24, 127
+  4:34.48    SE 0, 40, 25, 127
+  4:37.18    SE 0, 40, 26, 127
+  4:37.18    OBJ_MOTION obj=3(Flag) 13
+  4:39.88    SE 0, 40, 27, 127
+  4:40.92    OBJ_STEP obj=4(Majin bust-up) 0.05
+  4:40.92    OBJ_STEP obj=2(Priest) 0.05
+
+== ■カット３５  フラッグへズーム   [4:40.92  step 16855]
+  4:40.92  CAMERA #48 0135cp.sne key=37 frames 10..100 speed 0.25 (cut lasts 312 steps = 5.20 s)
+  4:40.92    OBJ_DISP 1(Majin (Dark Genie)) ON
+  4:40.92    OBJ_DISP 4(Majin bust-up) OFF
+  4:40.92    OBJ_DISP 2(Priest) OFF
+  4:40.92    OBJ_MOVE obj=1(Majin (Dark Genie)) 37
+  4:40.92    OBJ_MOVE obj=2(Priest) 37
+  4:40.92    OBJ_MOVE obj=3(Flag) 37
+  4:40.92    OBJ_MOTION obj=1(Majin (Dark Genie)) 7
+  4:44.05    MESSAGE msg=26 frames=40 pos=(66,136) tail=(332,312)  "(Gulp)..."   // フラッグ「う・・・」
+  4:44.05    OBJ_EYE obj=3(Flag) 7 20
+  4:44.05    OBJ_MOUTH obj=3(Flag) 4 40
+  4:44.62    OBJ_EYE obj=3(Flag) 8 20
+  4:44.65    OBJ_EYE obj=3(Flag) 9 20
+  4:44.68    OBJ_EYE obj=3(Flag) 8 20
+  4:44.72    OBJ_EYE obj=3(Flag) 7 20
+
+== ■カット３６  魔人へ   [4:46.12  step 17167]
+  4:46.12  CAMERA #49 0136cp.sne key=38 frames 10..50 speed 0.25 (cut lasts 368 steps = 6.13 s)
+  4:46.12    OBJ_MOVE obj=1(Majin (Dark Genie)) 38
+  4:46.12    OBJ_MOVE obj=2(Priest) 38
+  4:46.12    OBJ_MOVE obj=3(Flag) 38
+  4:46.12    OBJ_TALK obj=1(Majin (Dark Genie)) msg=27 frames=40 pos=(328,360) tail=(324,180)  "Mmmm, delicious."   // 魔人「さあて、願いは～」
+  4:46.12    OBJ_MOTION obj=1(Majin (Dark Genie)) 9
+  4:48.35    OBJ_MOTION obj=1(Majin (Dark Genie)) 7
+
+== ■フェードアウト   [4:50.25  step 17415]
+  4:50.25    FADE_OUT 0, 1
+  4:50.25    MES_CLR 
+  4:50.25    SOUND_FADE -1, 0, -4
+  4:52.15    OBJ_DISP 0(Seeda) OFF   // シーダ
+  4:52.15    OBJ_DISP 1(Majin (Dark Genie)) OFF   // 魔人
+  4:52.15    OBJ_DISP 2(Priest) OFF   // 司祭
+  4:52.15    OBJ_DISP 3(Flag) OFF   // フラッグ
+  4:52.15    OBJ_DISP 4(Majin bust-up) OFF   // 魔人Ｂ
+  4:52.15    OBJ_DISP 5(Majin hand / butterfly 2) OFF   // 魔人Ｃ
+  4:52.15    OBJ_DISP 6(curse dance leader) OFF   // 呪いダンスリーダー
+  4:52.15    OBJ_DISP 7(curse dancers (35)) OFF   // 呪いダンサー
+
+== ■ノルン村へ切り替え   [4:52.25  step 17535]
+  4:52.25  SCENE 1  -> B Norune village at night (norn.cfg)
+  4:52.25    FADE_IN 0, 2
+
+== ■ノルン村   [4:52.25  step 17535]
+  4:52.25  CAMERA #50 0301cp.sne key=50 frames 1..500 speed 0.35 (cut lasts 1201 steps = 20.02 s)
+  4:52.25    OBJ_DISP 9(Paige) ON
+  4:52.25    OBJ_MOVE obj=9(Paige) 50
+  4:52.25    OBJ_STEP obj=9(Paige) 1
+  4:52.65  SCENE_LOAD 2  (stream toan/toan.pim)
+  5:10.20    FADE_OUT 0, 1
+
+== ■トアンの家へ切り替え   [5:12.27  step 18736]
+  5:12.27  SCENE 2  -> B' Toan's house (toan.cfg)
+  5:12.27    FADE_IN 0, 2
+
+== ■カメラゆっくりロール   [5:12.27  step 18736]
+  5:12.27  CAMERA #51 0302cp.sne key=51 frames 5..60 speed 0.25 (cut lasts 214 steps = 3.57 s)
+  5:12.27    OBJ_DISP 8(Toan B) ON
+  5:12.27    OBJ_DISP 9(Paige) OFF
+  5:12.27    OBJ_DISP 10(Rene) ON
+
+== ■外から足音   [5:15.83  step 18950]
+  5:15.83  CAMERA #52 0303cp.sne key=52 frames 60..100 speed 0.3 (cut lasts 114 steps = 1.90 s)
+  5:15.83    OBJ_MOTION obj=10(Rene) 1
+  5:15.83    SE 0, 40, 36, 127
+  5:16.08    SE 0, 40, 36, 127
+  5:16.33    SE 0, 40, 36, 127
+  5:16.70    OBJ_MOTION2 obj=8(Toan B) 1 2
+  5:17.07    OBJ_DISP 9(Paige) ON
+  5:17.07    OBJ_STEP obj=9(Paige) 1
+  5:17.07    OBJ_MOTION obj=9(Paige) 9
+  5:17.07    SPRITE 1
+  5:17.07    SE 0, 38, 38, 127
+  5:17.15    OBJ_MOTION2 obj=9(Paige) 1 3
+
+== ■ペイジ登場   [5:17.73  step 19064]
+  5:17.73  CAMERA #53 0304cp.sne key=53 frames 100..120 speed 0.25 (cut lasts 64 steps = 1.07 s)
+  5:17.73    OBJ_EYE obj=9(Paige) 4 1
+  5:17.73    OBJ_STEP obj=9(Paige) 0.05
+  5:17.73    OBJ_TALK obj=9(Paige) msg=28 frames=10 pos=(100,360) tail=(400,100)  "Hi, how are you today?\p<name0>, it's already started! / Come on, let's go."   // 「おばさんごきげんよう」
+  5:17.75    WAIT_KEY 0
+  5:17.78    OBJ_MOTION2 obj=9(Paige) 4 5
+  5:18.35    OBJ_EYE obj=9(Paige) 1 1
+  5:18.38    OBJ_EYE obj=9(Paige) 2 1
+  5:18.42    OBJ_EYE obj=9(Paige) 1 1
+  5:18.45    OBJ_EYE obj=9(Paige) 0 1
+  5:18.62    OBJ_EYE obj=9(Paige) 1 1
+  5:18.65    OBJ_EYE obj=9(Paige) 2 1
+  5:18.68    OBJ_EYE obj=9(Paige) 1 1
+  5:18.72    OBJ_EYE obj=9(Paige) 0 1
+  5:18.75    OBJ_TALK obj=9(Paige) msg=29 frames=10 pos=(100,360) tail=(400,100)  "<name0>, it's already started! / Come on, let's go."   // 「トアンもう始まってる～」
+  5:18.77    WAIT_KEY 0
+
+== ■レネ、トアン、ペイジ   [5:18.80  step 19128]
+  5:18.80  CAMERA #54 0305cp.sne key=54 frames 120..140 speed 0.25 (cut lasts 100 steps = 1.67 s)
+  5:18.80    OBJ_MOTION2 obj=10(Rene) 3 0
+  5:19.37    OBJ_MOTION2 obj=8(Toan B) 3 0
+  5:19.37    OBJ_TALK obj=10(Rene) msg=30 frames=10 pos=(100,60) tail=(80,324)  "See, I told you. / You should have hurried."   // 「ほら見なさい～」
+  5:19.38    WAIT_KEY 0
+  5:19.42    OBJ_MOTION obj=10(Rene) 1
+  5:19.42    OBJ_MOTION2 obj=8(Toan B) 1 2
+  5:19.42    OBJ_MOTION2 obj=9(Paige) 7 8
+  5:19.42    OBJ_TALK obj=9(Paige) msg=31 frames=10 pos=(320,60) tail=(400,224)  "C'mon, we're late. / I'm a staff member this year, / so I have to go. Sorry..."   // 「ごめん今年係り～」
+  5:19.43    WAIT_KEY 0
+  5:19.47    OBJ_STEP obj=9(Paige) 1
+  5:19.50    OBJ_MOTION obj=9(Paige) 6
+  5:19.50    SPRITE 2
+  5:20.33    OBJ_STEP obj=9(Paige) 0.05
+  5:20.33    OBJ_DISP 9(Paige) OFF
+  5:20.37    SE 0, 38, 39, 127
+
+== ■レネ   [5:20.47  step 19228]
+  5:20.47  CAMERA #55 0306cp.sne key=55 frames 150..200 speed 0.15 (cut lasts 335 steps = 5.58 s)
+  5:20.48    OBJ_MOTION2 obj=10(Rene) 4 7
+  5:20.48    OBJ_MOTION2 obj=8(Toan B) 3 0
+  5:20.48    OBJ_TALK obj=10(Rene) msg=32 frames=30 pos=(300,60) tail=(200,200)  "Oh, she left you. / <name0>, hurry up."   // 「さあ、トアン～」
+  5:20.85    SE 0, 40, 38, 127
+  5:20.85    WAIT_KEY 0
+  5:20.88    OBJ_MOTION2 obj=10(Rene) 5 6
+  5:20.88    SE 0, 40, 34, 127
+  5:23.47    OBJ_MOTION2 obj=8(Toan B) 4 7
+  5:26.05    SE 0, 40, 39, 127
+
+== ■トアン、スープを飲む～帽子をかぶる   [5:26.05  step 19563]
+  5:26.05  CAMERA #56 0307cp.sne key=56 frames 200..250 speed 0.13 (cut lasts 314 steps = 5.23 s)
+  5:26.05    OBJ_MOTION2 obj=8(Toan B) 5 6
+  5:27.35    SE 0, 40, 35, 127
+  5:28.40    SPRITE 3
+  5:28.93    SE 0, 40, 37, 127
+  5:30.23    SE 0, 40, 40, 127
+  5:31.28    OBJ_DISP 8(Toan B) OFF
+
+== ■トアン、正面、目パチパチ   [5:31.28  step 19877]
+  5:31.28  CAMERA #57 0308cp.sne key=57 frames 250..280 speed 0.25 (cut lasts 202 steps = 3.37 s)
+  5:31.28    OBJ_DISP 11(Toan) ON
+  5:31.28    OBJ_STEP obj=11(Toan) 1
+  5:31.28    OBJ_MOTION2 obj=11(Toan) 5 0
+  5:31.52    OBJ_STEP obj=11(Toan) 0.05
+  5:31.52  SCENE_LOAD 3  (stream norn2/norn2.pim)
+  5:32.42    FADE_OUT 0, 1
+  5:32.42    SOUND_FADE -1, 0, -2
+  5:34.65    OBJ_DISP 8(Toan B) OFF   // トアンＢＯＦＦ
+  5:34.65    OBJ_DISP 9(Paige) OFF   // ペイジＯＦＦ
+  5:34.65    OBJ_DISP 10(Rene) OFF   // レネＯＦＦ
+  5:34.65    OBJ_DISP 11(Toan) OFF   // トアンＯＦＦ
+
+== ■ノルン村へきりかえ   [5:34.65  step 20079]
+  5:34.65  CAMERA #58 0401cp.sne key=58 frames 1..170 speed 0.7 (cut lasts 240 steps = 4.00 s)
+  5:34.67  SCENE 3  -> C Norune festival (norn2.cfg)
+  5:34.67    FADE_IN 0, 2
+  5:34.67    OBJ_DISP 11(Toan) ON
+
+== ■ノルン村   [5:34.67  step 20080]
+  5:34.67    OBJ_MOVE obj=11(Toan) 58
+  5:34.67    OBJ_MOTION obj=11(Toan) 2
+  5:34.77  SCENE_LOAD 4  (stream norn2/ndance.pak)
+  5:38.20    OBJ_MOTION obj=11(Toan) 0
+  5:38.65  CAMERA #59 0402cp.sne key=59 frames 171..200 speed 0.5 (cut lasts 58 steps = 0.97 s)
+  5:38.65    OBJ_MOVE obj=11(Toan) 59
+  5:38.65    OBJ_MOTION obj=11(Toan) 0
+  5:38.65    OBJ_EYE obj=11(Toan) 4 30
+  5:38.65    OBJ_MOUTH obj=11(Toan) 4 30
+
+== ■ノルン村、ジーナ、カール走り   [5:39.62  step 20377]
+  5:39.62  CAMERA #60 0403cp.sne key=60 frames 171..200 speed 0.3 (cut lasts 95 steps = 1.58 s)
+  5:39.62    OBJ_DISP 12(Gina) ON
+  5:39.62    OBJ_MOVE obj=12(Gina) 60
+  5:39.62    OBJ_MOTION obj=12(Gina) 1
+  5:39.62    OBJ_DISP 13(Karl) ON
+  5:39.62    OBJ_MOVE obj=13(Karl) 60
+  5:39.62    OBJ_MOTION obj=13(Karl) 3
+  5:39.62    OBJ_MOVE obj=11(Toan) 60
+  5:39.62    OBJ_MOTION obj=11(Toan) 0
+  5:39.62    OBJ_EYE obj=11(Toan) 4 30
+  5:39.62    OBJ_MOUTH obj=11(Toan) 4 30
+
+== ■ノルン村   [5:41.20  step 20472]
+  5:41.20  CAMERA #61 0404cp.sne key=61 frames 171..230 speed 0.3 (cut lasts 156 steps = 2.60 s)
+  5:41.20    OBJ_DISP 12(Gina) OFF
+  5:41.20    OBJ_DISP 13(Karl) OFF
+  5:41.20    OBJ_MOVE obj=11(Toan) 61
+  5:41.20    OBJ_MOTION obj=11(Toan) 0
+  5:41.20    OBJ_EYE obj=11(Toan) 4 30
+  5:41.20    OBJ_MOUTH obj=11(Toan) 4 30
+  5:41.67    OBJ_EYE obj=11(Toan) 1 2
+  5:41.68    OBJ_EYE obj=11(Toan) 2 2
+  5:41.70    OBJ_EYE obj=11(Toan) 3 2
+  5:41.72    OBJ_EYE obj=11(Toan) 2 2
+  5:41.73    OBJ_EYE obj=11(Toan) 1 2
+  5:41.75    OBJ_EYE obj=11(Toan) 4 2
+  5:41.83    OBJ_EYE obj=11(Toan) 1 2
+  5:41.85    OBJ_EYE obj=11(Toan) 2 2
+  5:41.87    OBJ_EYE obj=11(Toan) 3 2
+  5:41.88    OBJ_EYE obj=11(Toan) 2 2
+  5:41.90    OBJ_EYE obj=11(Toan) 1 2
+  5:41.92    OBJ_EYE obj=11(Toan) 4 2
+  5:43.33    OBJ_MOTION obj=11(Toan) 2
+
+== ■ダンスシーンへ切り替え   [5:43.80  step 20628]
+  5:43.80  SCENE 4  -> C dancers
+  5:43.80    OBJ_STEP obj=14(Ornet) 1
+  5:43.80    OBJ_STEP obj=15(Macho) 1
+  5:43.80    OBJ_STEP obj=16(Claude) 1
+  5:43.80    OBJ_STEP obj=17(Little Macho) 1
+  5:43.80    OBJ_STEP obj=18(Odd) 1
+  5:43.80    OBJ_STEP obj=19(village dancer m) 1
+  5:43.80    OBJ_STEP obj=20(village dancer f) 1
+
+== ■ノルン村   [5:43.80  step 20628]
+  5:43.80  CAMERA #62 0405cp.sne key=62 frames 1..180 speed 0.5 (cut lasts 358 steps = 5.97 s)
+  5:43.80    OBJ_MOVE obj=11(Toan) 62
+  5:43.80    OBJ_MOTION obj=11(Toan) 2
+  5:43.80    OBJ_DISP 19(village dancer m) ON
+  5:43.80    OBJ_MOTION obj=19(village dancer m) 1
+  5:49.77    OBJ_DISP 11(Toan) OFF
+
+== ■ダンスシーン   [5:49.77  step 20986]
+  5:49.77  CAMERA #63 0406cp.sne key=63 frames 1..300 speed 0.5 (cut lasts 598 steps = 9.97 s)
+  5:49.77    OBJ_DISP 14(Ornet) ON
+  5:49.77    OBJ_DISP 19(village dancer m) ON
+  5:49.77    OBJ_DISP 20(village dancer f) ON
+  5:49.77    OBJ_MOTION obj=14(Ornet) 0
+  5:49.77    OBJ_MOTION obj=19(village dancer m) 0
+  5:49.77    OBJ_MOTION obj=20(village dancer f) 0
+  5:59.73  CAMERA #64 0407cp.sne key=64 frames 301..600 speed 0.5 (cut lasts 598 steps = 9.97 s)
+  5:59.73    OBJ_DISP 15(Macho) ON
+  5:59.73    OBJ_DISP 16(Claude) ON
+  6:09.70  CAMERA #65 0408cp.sne key=65 frames 601..675 speed 0.5 (cut lasts 148 steps = 2.47 s)
+  6:09.70    OBJ_DISP 17(Little Macho) ON
+  6:09.70    OBJ_DISP 18(Odd) ON
+  6:09.70    OBJ_DISP 15(Macho) OFF
+  6:09.70    OBJ_DISP 16(Claude) OFF
+  6:12.17  CAMERA #66 0409cp.sne key=66 frames 676..976 speed 0.5 (cut lasts 598 steps = 9.97 s)
+  6:12.17    OBJ_DISP 17(Little Macho) OFF
+  6:12.17    OBJ_DISP 18(Odd) OFF
+  6:22.13    OBJ_DISP 14(Ornet) OFF
+
+== ■ノルン村   [6:22.13  step 22928]
+  6:22.13  CAMERA #67 0410cp.sne key=67 frames 1..91 speed 0.4 (cut lasts 222 steps = 3.70 s)
+  6:22.13    OBJ_DISP 11(Toan) ON
+  6:22.13    OBJ_MOVE obj=11(Toan) 63
+  6:22.13    OBJ_MOTION obj=11(Toan) 2
+  6:25.83  CAMERA #68 0411cp.sne key=68 frames 1..60 speed 0.5 (cut lasts 104 steps = 1.73 s)
+  6:25.83    OBJ_MOVE obj=11(Toan) 64
+  6:25.83    OBJ_MOTION obj=11(Toan) 0
+  6:25.83    OBJ_EYE obj=11(Toan) 5 60
+  6:25.83    OBJ_MOUTH obj=11(Toan) 5 60
+  6:26.47    OBJ_EYE obj=11(Toan) 1 2
+  6:26.48    OBJ_EYE obj=11(Toan) 2 2
+  6:26.50    OBJ_EYE obj=11(Toan) 3 2
+  6:26.52    OBJ_EYE obj=11(Toan) 2 2
+  6:26.53    OBJ_EYE obj=11(Toan) 1 2
+  6:26.55    OBJ_EYE obj=11(Toan) 4 2
+  6:26.62    OBJ_EYE obj=11(Toan) 1 2
+  6:26.63    OBJ_EYE obj=11(Toan) 2 2
+  6:26.65    OBJ_EYE obj=11(Toan) 3 2
+  6:26.67    OBJ_EYE obj=11(Toan) 2 2
+  6:26.68    OBJ_EYE obj=11(Toan) 1 2
+  6:26.70    OBJ_EYE obj=11(Toan) 4 2
+  6:27.57  CAMERA #69 0412cp.sne key=69 frames 1..121 speed 0.5 (cut lasts 296 steps = 4.93 s)
+  6:27.57    OBJ_MOTION obj=19(village dancer m) 1
+  6:27.57    OBJ_MOTION obj=20(village dancer f) 1
+  6:28.20  SCENE_LOAD 5  (stream norn2/majin.pak)
+  6:28.20    SOUND_FADE -1, 0, -1
+
+== ■魔人シーンへ切り替え   [6:32.50  step 23550]
+  6:32.50  SCENE 5  -> C Majin appears (majin.pak)
+  6:32.50    OBJ_DISP 11(Toan) OFF
+  6:32.50    OBJ_DISP 19(village dancer m) OFF
+  6:32.50    OBJ_DISP 20(village dancer f) OFF
+  6:32.50    OBJ_STEP obj=1(Majin (Dark Genie)) 1
+  6:32.50    OBJ_STEP obj=3(Flag) 1
+  6:32.50    OBJ_STEP obj=4(Majin bust-up) 1
+
+== ■月影、一枚絵   [6:32.50  step 23550]
+  6:32.50  CAMERA #70 0413cp.sne key=70 frames 1..60 speed 0.5 (cut lasts 116 steps = 1.93 s)
+  6:34.43  CAMERA #71 0414cp.sne key=71 frames 1..60 speed 0.5 (cut lasts 116 steps = 1.93 s)
+
+== ■魔人＆フラッグ 15   [6:36.37  step 23782]
+  6:36.37  CAMERA #72 0415cp.sne key=72 frames 8..130 speed 0.5 (cut lasts 254 steps = 4.23 s)
+  6:36.37    OBJ_DISP 1(Majin (Dark Genie)) ON
+  6:36.37    OBJ_DISP 3(Flag) ON
+  6:36.37    OBJ_MOTION obj=1(Majin (Dark Genie)) 18
+  6:36.37    OBJ_MOTION obj=3(Flag) 0
+  6:36.37    OBJ_MOVE obj=1(Majin (Dark Genie)) 67
+  6:36.63    LOAD_OBJ 6, 4
+
+== ■魔人＆フラッグ 16   [6:40.60  step 24036]
+  6:40.60  CAMERA #73 0416cp.sne key=73 frames 8..100 speed 0.5 (cut lasts 198 steps = 3.30 s)
+  6:40.60    OBJ_MOVE obj=1(Majin (Dark Genie)) 68
+  6:40.60    MESSAGE msg=40 frames=90 pos=(400,362) tail=(200,100)  "(no such message in this bank)"   // フラッグ「手始めに」
+
+== ■フラッグ 17   [6:43.90  step 24234]
+  6:43.90  CAMERA #74 0417cp.sne key=74 frames 10..70 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  6:43.90    OBJ_MOVE obj=1(Majin (Dark Genie)) 69
+  6:43.90    MESSAGE msg=41 frames=45 pos=(100,100) tail=(300,200)  "(no such message in this bank)"   // フラッグ「ククク」
+
+== ■魔人＆フラッグ 18   [6:45.87  step 24352]
+  6:45.87  CAMERA #75 0418cp.sne key=75 frames 10..70 speed 0.5 (cut lasts 114 steps = 1.90 s)
+  6:45.87    OBJ_MOVE obj=1(Majin (Dark Genie)) 70
+  6:45.87    OBJ_STEP obj=3(Flag) 0.05
+  6:46.50    OBJ_MOTION2 obj=3(Flag) 18 19
+  6:47.73    OBJ_STEP obj=3(Flag) 1
+  6:47.73    OBJ_MOTION obj=1(Majin (Dark Genie)) 19
+
+== ■魔人＆フラッグ 19   [6:47.77  step 24466]
+  6:47.77  CAMERA #76 0419cp.sne key=76 frames 5..40 speed 0.3 (cut lasts 112 steps = 1.87 s)
+  6:47.77    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  6:47.77    OBJ_DISP 3(Flag) OFF
+  6:47.77    OBJ_DISP 4(Majin bust-up) ON
+  6:47.77    OBJ_STEP obj=4(Majin bust-up) 1
+  6:47.77    OBJ_MOTION obj=4(Majin bust-up) 1
+
+== ■魔人＆フラッグ 20   [6:49.63  step 24578]
+  6:49.63  CAMERA #77 0420cp.sne key=77 frames 35..45 speed 0.2 (cut lasts 42 steps = 0.70 s)
+  6:49.63    OBJ_DISP 1(Majin (Dark Genie)) ON
+  6:49.63    OBJ_DISP 3(Flag) ON
+  6:49.63    OBJ_DISP 4(Majin bust-up) OFF
+  6:49.63    OBJ_STEP obj=1(Majin (Dark Genie)) 1
+  6:49.63    OBJ_STEP obj=3(Flag) 1
+  6:49.63    OBJ_MOVE obj=1(Majin (Dark Genie)) 72
+  6:49.63    OBJ_MOTION obj=1(Majin (Dark Genie)) 2
+  6:49.63    OBJ_MOTION obj=3(Flag) 2
+
+== ■魔人＆フラッグ 21   [6:50.33  step 24620]
+  6:50.33  CAMERA #78 0421cp.sne key=78 frames 45..80 speed 0.2 (cut lasts 154 steps = 2.57 s)
+  6:50.33    OBJ_MOVE obj=1(Majin (Dark Genie)) 73
+  6:50.33    OBJ_MOTION obj=1(Majin (Dark Genie)) 3
+  6:50.33    OBJ_MOTION obj=3(Flag) 3
+  6:50.78    SPRITE 1   // 光エフェクト
+  6:50.78    BEEM -1, 0, 0, 0, 0, 0
+  6:52.90    OBJ_STEP obj=1(Majin (Dark Genie)) 0.1
+  6:52.90    OBJ_STEP obj=3(Flag) 0.1
+
+== ■魔人＆フラッグ 23   [6:52.90  step 24774]
+  6:52.90  CAMERA #79 0423cp.sne key=80 frames 120..140 speed 0.2 (cut lasts 84 steps = 1.40 s)
+  6:52.90    OBJ_MOVE obj=1(Majin (Dark Genie)) 75
+  6:52.90    OBJ_MOTION2 obj=1(Majin (Dark Genie)) 7 0
+  6:52.90    OBJ_MOTION2 obj=3(Flag) 7 0
+  6:53.85    SPRITE 1   // 光エフェクト
+  6:53.85    BEEM -1, 0, 0, 0, 0, 0
+
+== ■魔人＆フラッグ 25   [6:54.30  step 24858]
+  6:54.30  CAMERA #80 0425cp.sne key=82 frames 140..160 speed 0.2 (cut lasts 92 steps = 1.53 s)
+  6:54.30    OBJ_MOVE obj=1(Majin (Dark Genie)) 77
+  6:54.30    OBJ_MOTION2 obj=1(Majin (Dark Genie)) 8 1
+  6:54.30    OBJ_MOTION2 obj=3(Flag) 8 0
+
+== ■魔人＆フラッグ 26   [6:55.83  step 24950]
+  6:55.83  CAMERA #81 0426cp.sne key=83 frames 140..160 speed 0.2 (cut lasts 92 steps = 1.53 s)
+  6:55.83    OBJ_MOVE obj=1(Majin (Dark Genie)) 78
+  6:55.83    OBJ_MOTION obj=1(Majin (Dark Genie)) 20
+
+== ■魔人＆フラッグ 27   [6:57.37  step 25042]
+  6:57.37  CAMERA #82 0427cp.sne key=84 frames 160..240 speed 0.2 (cut lasts 356 steps = 5.93 s)
+  6:57.37    OBJ_MOVE obj=1(Majin (Dark Genie)) 79
+  6:57.37    OBJ_MOTION obj=1(Majin (Dark Genie)) 9
+  6:57.37    OBJ_MOTION obj=3(Flag) 9
+  6:58.27    SPRITE 1   // 光エフェクト
+  6:58.27    BEEM -1, 0, 0, 0, 0, 0
+  6:58.88    SPRITE 1   // 光エフェクト
+  6:58.88    BEEM -1, 0, 0, 0, 0, 0
+  6:59.33    OBJ_MOTION obj=1(Majin (Dark Genie)) 10
+  6:59.33    OBJ_MOTION obj=3(Flag) 10
+  7:03.28    OBJ_STEP obj=1(Majin (Dark Genie)) 1
+  7:03.28    OBJ_STEP obj=3(Flag) 1
+
+== ■魔人＆フラッグ 28   [7:03.30  step 25398]
+  7:03.30  CAMERA #83 0428cp.sne key=85 frames 240..350 speed 0.2 (cut lasts 494 steps = 8.23 s)
+  7:03.30    OBJ_MOVE obj=1(Majin (Dark Genie)) 80
+  7:03.30    OBJ_MOTION obj=1(Majin (Dark Genie)) 12
+  7:03.30    OBJ_MOTION obj=3(Flag) 12
+  7:03.58    SPRITE 1   // 光エフェクト
+  7:03.58    BEEM -1, 0, 0, 0, 0, 0
+  7:03.58  SCENE_LOAD 6  (stream norn2/norn2.pim)
+  7:06.28    SPRITE 1   // 光エフェクト
+  7:06.28    BEEM -1, 0, 0, 0, 0, 0
+  7:07.73    SPRITE 1   // 光エフェクト
+  7:07.73    BEEM -1, 0, 0, 0, 0, 0
+  7:08.35    SPRITE 1   // 光エフェクト
+  7:08.35    BEEM -1, 0, 0, 0, 0, 0
+  7:09.38    SPRITE 1   // 光エフェクト
+  7:09.38    BEEM -1, 0, 0, 0, 0, 0
+  7:10.33    SPRITE 1   // 光エフェクト
+  7:10.33    BEEM -1, 0, 0, 0, 0, 0
+
+== ■魔人＆フラッグ 29   [7:11.53  step 25892]
+  7:11.53  CAMERA #84 0429cp.sne key=86 frames 45..67 speed 0.3 (cut lasts 68 steps = 1.13 s)
+  7:11.53    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  7:11.53    OBJ_DISP 3(Flag) OFF
+  7:11.53    OBJ_DISP 4(Majin bust-up) ON
+  7:11.53    OBJ_MOVE obj=4(Majin bust-up) 81
+  7:11.53    OBJ_MOTION obj=4(Majin bust-up) 2
+
+== ■ノルン村へ切り替え   [7:12.67  step 25960]
+  7:12.67  SCENE 6  -> C destruction
+  7:12.67    OBJ_DISP 1(Majin (Dark Genie)) OFF
+  7:12.67    OBJ_DISP 3(Flag) OFF
+  7:12.67    OBJ_DISP 4(Majin bust-up) OFF
+  7:12.67    OBJ_DISP 18(Odd) ON
+  7:12.67    OBJ_MOTION obj=18(Odd) 1
+  7:12.67    OBJ_DISP 12(Gina) ON
+  7:12.67    OBJ_MOTION obj=12(Gina) 1
+
+== ■ノルン村 30   [7:12.67  step 25960]
+  7:12.67  CAMERA #85 0430cp.sne key=87 frames 1..150 speed 0.5 (cut lasts 282 steps = 4.70 s)
+  7:12.67    BEEM 600, 400, -100, 200, 10, 100
+  7:13.13    BEEM 600, 400, -100, 0, 10, 300
+  7:13.60  SCENE_LOAD 7  (stream norn3/norn3.pak)
+  7:13.73    SPRITE 1
+  7:13.73    BOM 200, 10, 100, 20
+  7:14.03    BEEM 600, 400, -100, 0, 10, 200
+  7:14.50    SPRITE 1
+  7:14.50    BOM 0, 10, 300, 10
+  7:14.50    BEEM 600, 400, -100, -200, 10, 350
+  7:15.47    SPRITE 1
+  7:15.47    BOM 0, 10, 200, 20
+  7:16.43    SPRITE 1
+  7:16.43    BOM -200, 10, 350, 50
+  7:17.27    OBJ_DISP 18(Odd) OFF
+  7:17.27    OBJ_DISP 12(Gina) OFF
+
+== ■ノルン村崩壊へ切り替え   [7:17.37  step 26242]
+  7:17.37  SCENE 7  -> C destruction 2 (norn3.pak)
+  7:17.37    OBJ_STEP obj=9(Paige) 1
+  7:17.37    OBJ_STEP obj=11(Toan) 1
+
+== ■ノルン村 31   [7:17.37  step 26242]
+  7:17.37  CAMERA #86 0431cp.sne key=88 frames 1..45 speed 0.5 (cut lasts 82 steps = 1.37 s)
+  7:17.60    BEEM 700, 200, 100, 550, 40, -80
+  7:18.10    SPRITE 1
+  7:18.10    BOM 550, 80, -80, 40
+  7:18.23    FADE_OUT 1, 4
+
+== ■ノルン村 32   [7:18.73  step 26324]
+  7:18.73  CAMERA #87 0432cp.sne key=89 frames 1..45 speed 0.5 (cut lasts 180 steps = 3.00 s)
+  7:18.73    FADE_IN 1, 128
+  7:18.73    BEEM -200, 150, -200, -350, 20, -300
+  7:19.17    SPRITE 1
+  7:19.17    BOM -350, 20, -300, 40
+  7:19.30    SPRITE 1
+  7:19.30    BOM -300, 20, -280, 20
+  7:19.60    FADE_OUT 1, 4
+
+== ■ノルン村 33   [7:21.73  step 26504]
+  7:21.73  CAMERA #88 0433cp.sne key=90 frames 175..295 speed 0.5 (cut lasts 238 steps = 3.97 s)
+  7:21.73    OBJ_DISP 18(Odd) ON
+  7:21.73    OBJ_DISP 13(Karl) ON
+  7:21.73    FADE_IN 1, 0.5
+  7:21.73    OBJ_DISP 11(Toan) ON
+  7:25.70    OBJ_DISP 18(Odd) OFF
+  7:25.70    OBJ_DISP 13(Karl) OFF
+
+== ■ノルン村 34   [7:25.70  step 26742]
+  7:25.70  CAMERA #89 0434cp.sne key=91 frames 175..219 speed 0.5 (cut lasts 78 steps = 1.30 s)
+  7:25.70    OBJ_MOTION2 obj=11(Toan) 3 0
+  7:25.70    OBJ_EYE obj=11(Toan) 6 45
+  7:25.70    OBJ_MOUTH obj=11(Toan) 6 45
+
+== ■ノルン村 35   [7:27.00  step 26820]
+  7:27.00  CAMERA #90 0435cp.sne key=92 frames 200..230 speed 0.5 (cut lasts 76 steps = 1.27 s)
+  7:27.00    OBJ_DISP 9(Paige) ON
+  7:27.00    OBJ_MOTION obj=9(Paige) 0
+  7:27.80    OBJ_STEP obj=11(Toan) 0.05
+  7:27.80    OBJ_EYE obj=11(Toan) 7 15
+  7:27.80    OBJ_MOUTH obj=11(Toan) 7 15
+
+== ■ノルン村 36   [7:28.27  step 26896]
+  7:28.27  CAMERA #91 0436cp.sne key=93 frames 10..70 speed 0.5 (cut lasts 118 steps = 1.97 s)
+
+== ■ノルン村 37   [7:30.23  step 27014]
+  7:30.23  CAMERA #92 0437cp.sne key=94 frames 25..70 speed 0.5 (cut lasts 88 steps = 1.47 s)
+  7:30.23    OBJ_EYE obj=9(Paige) 1 1000
+  7:30.23    OBJ_TALK obj=9(Paige) msg=100 frames=30 pos=(100,50) tail=(250,300)  "(no such message in this bank)"   // ペイジ「トアン」
+  7:30.23    OBJ_MOTION obj=9(Paige) 1
+  7:30.23    OBJ_STEP obj=11(Toan) 0.1
+
+== ■ノルン村 38   [7:31.70  step 27102]
+  7:31.70  CAMERA #93 0438cp.sne key=95 frames 10..30 speed 0.5 (cut lasts 34 steps = 0.57 s)
+  7:32.07    OBJ_MOTION obj=11(Toan) 1
+  7:32.10    OBJ_MOTION obj=11(Toan) 2
+  7:32.10    OBJ_MOUTH obj=9(Paige) 3 1000
+
+== ■ノルン村 39   [7:32.27  step 27136]
+  7:32.27  CAMERA #94 0439cp.sne key=96 frames 10..70 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  7:32.27    OBJ_MOTION obj=11(Toan) 7
+
+== ■ノルン村 40   [7:34.23  step 27254]
+  7:34.23  CAMERA #95 0440cp.sne key=97 frames 1..61 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  7:34.23    OBJ_EYE obj=11(Toan) 9 60
+  7:34.23    OBJ_MOUTH obj=11(Toan) 9 60
+  7:34.23    OBJ_STEP obj=11(Toan) 1
+
+== ■ノルン村 41   [7:36.20  step 27372]
+  7:36.20  CAMERA #96 0441cp.sne key=98 frames 230..250 speed 0.5 (cut lasts 42 steps = 0.70 s)
+  7:36.20    OBJ_MOTION2 obj=11(Toan) 5 6
+
+== ■ノルン村 42 ペイジバストアップ   [7:36.90  step 27414]
+  7:36.90  CAMERA #97 0442cp.sne key=99 frames 40..80 speed 0.7 (cut lasts 56 steps = 0.93 s)
+  7:36.90    OBJ_MOTION obj=9(Paige) 2
+  7:36.90    OBJ_DISP 11(Toan) OFF
+
+== ■ノルン村 43   [7:37.83  step 27470]
+  7:37.83  CAMERA #98 0443cp.sne key=100 frames 250..330 speed 0.05 (cut lasts 6739 steps = 112.32 s)
+  7:37.83    OBJ_DISP 11(Toan) ON
+  7:37.83    OBJ_DISP 1(Majin (Dark Genie)) ON
+  7:37.83    OBJ_DISP 3(Flag) ON
+  7:37.83    OBJ_MOTION obj=3(Flag) 0
+  7:37.83    FADE_OUT 1, 0.4
+  7:40.90  SCENE_LOAD 8  (stream norn4/seirei.pak)
+  7:40.90    OBJ_DISP 11(Toan) OFF
+  7:40.90    OBJ_DISP 9(Paige) OFF
+  7:40.90    FADE_IN 1, 128
+  7:42.28    OBJ_MOTION2 obj=1(Majin (Dark Genie)) 17 18
+  7:48.32    OBJ_STEP obj=1(Majin (Dark Genie)) 0.01
+  8:21.02    OBJ_MOTION2 obj=1(Majin (Dark Genie)) 19 20
+  8:47.05    SOUND_FADE -1, 0, -1
+  8:49.75    FADE_OUT 0, 1
+
+== ■精霊王シーンへ切り替え   [9:30.15  step 34209]
+  9:30.15  SCENE 8  -> D Spirit King (seirei.cfg)
+  9:30.15    OBJ_DISP 1(Majin (Dark Genie)) OFF   // 魔人
+  9:30.15    OBJ_DISP 3(Flag) OFF   // フラッグ
+  9:30.15    OBJ_DISP 4(Majin bust-up) OFF   // 魔人Ｂ
+  9:30.15    OBJ_DISP 5(Majin hand / butterfly 2) OFF   // 魔人Ｃ
+  9:30.15    OBJ_DISP 9(Paige) OFF   // ペイジ
+  9:30.15    OBJ_DISP 11(Toan) OFF   // トアン
+  9:30.15    OBJ_DISP 12(Gina) OFF   // ジーナ
+  9:30.15    OBJ_DISP 13(Karl) OFF   // カール
+  9:30.15    OBJ_DISP 14(Ornet) OFF   // オルネット
+  9:30.15    OBJ_DISP 15(Macho) OFF   // マッチョ
+  9:30.15    OBJ_DISP 16(Claude) OFF   // クロード
+  9:30.15    OBJ_DISP 17(Little Macho) OFF   // コマッチョ
+  9:30.15    OBJ_DISP 18(Odd) OFF   // オッド
+  9:30.15    OBJ_DISP 19(village dancer m) OFF   // 村ダンサー男１
+  9:30.15    OBJ_DISP 20(village dancer f) OFF   // 村ダンサー女１
+  9:30.15    OBJ_STEP obj=8(Toan B) 0.05
+  9:30.15    OBJ_STEP obj=11(Toan) 0.05
+  9:30.15    OBJ_STEP obj=21(Spirit King) 0.05
+  9:30.15    FADE_IN 0, 1
+  9:30.15    SPRITE 0
+
+== ■精霊王 1   [9:30.15  step 34209]
+  9:30.15  CAMERA #99 0501cp.sne key=101 frames 60..100 speed 0.2 (cut lasts 579 steps = 9.65 s)
+  9:30.15    OBJ_DISP 8(Toan B) ON   // トアンＢ
+  9:30.15    OBJ_MOTION obj=8(Toan B) 7
+  9:38.22    SPRITE 1
+  9:39.75    MESSAGE msg=101 frames=20 pos=(400,350) tail=(400,350)  "(no such message in this bank)"   // 精霊王「少年よ～」
+  9:39.77    WAIT_KEY 1
+
+== ■精霊王 2   [9:39.80  step 34788]
+  9:39.80  CAMERA #100 0502cp.sne key=102 frames 60..110 speed 0.23 (cut lasts 305 steps = 5.08 s)
+  9:39.80    OBJ_MOTION2 obj=8(Toan B) 1 2
+  9:39.80    OBJ_EYE obj=8(Toan B) 4 60
+  9:42.22    OBJ_EYE obj=8(Toan B) 5 60
+  9:42.38    OBJ_EYE obj=8(Toan B) 6 60
+  9:42.55    OBJ_EYE obj=8(Toan B) 7 60
+  9:42.72    OBJ_EYE obj=8(Toan B) 8 60
+  9:42.88    OBJ_EYE obj=8(Toan B) 9 60
+  9:43.05    MESSAGE msg=102 frames=20 pos=(100,100) tail=(300,200)  "(no such message in this bank)"   // トアン「！」
+  9:43.05    OBJ_EYE obj=8(Toan B) 0 60   // デフォルト
+  9:43.05    OBJ_MOUTH obj=8(Toan B) 7 60   // 驚き口１
+  9:43.65    OBJ_EYE obj=8(Toan B) 1 60
+  9:43.67    OBJ_EYE obj=8(Toan B) 2 60
+  9:43.68    OBJ_EYE obj=8(Toan B) 3 60
+  9:43.70    OBJ_EYE obj=8(Toan B) 2 60
+  9:43.72    OBJ_EYE obj=8(Toan B) 1 60
+  9:43.73    OBJ_EYE obj=8(Toan B) 0 60
+  9:43.83    OBJ_EYE obj=8(Toan B) 1 60
+  9:43.85    OBJ_EYE obj=8(Toan B) 2 60
+  9:43.87    OBJ_EYE obj=8(Toan B) 3 60
+  9:43.88    OBJ_EYE obj=8(Toan B) 2 60
+  9:43.90    OBJ_EYE obj=8(Toan B) 1 60
+  9:43.92    OBJ_EYE obj=8(Toan B) 0 60
+
+== ■精霊王 3   [9:44.88  step 35093]
+  9:44.88  CAMERA #101 0503cp.sne key=103 frames 10..70 speed 1 (cut lasts 60 steps = 1.00 s)
+  9:44.88    OBJ_DISP 21(Spirit King) ON   // 精霊王
+  9:44.88    OBJ_STEP obj=8(Toan B) 1
+
+== ■精霊王 4   [9:45.88  step 35153]
+  9:45.88  CAMERA #102 0504cp.sne key=104 frames 115..205 speed 0.5 (cut lasts 89 steps = 1.48 s)
+  9:45.88    OBJ_MOTION2 obj=8(Toan B) 3 0
+  9:46.02    OBJ_STEP obj=8(Toan B) 0.05
+  9:47.32    MESSAGE msg=103 frames=45 pos=(100,350) tail=(150,100)  "(no such message in this bank)"   // 精霊王「わしは精霊王～」
+  9:47.33    WAIT_KEY 1
+
+== ■精霊王 5   [9:47.37  step 35242]
+  9:47.37  CAMERA #103 0505cp.sne key=105 frames 100..400 speed 0.5 (cut lasts 3 steps = 0.05 s)
+  9:47.37    OBJ_MOTION2 obj=8(Toan B) 4 5
+  9:47.37    MESSAGE msg=104 frames=300 pos=(100,350) tail=(100,350)  "(no such message in this bank)"   // 精霊王「少年よ、よくきけ～」
+  9:47.38    WAIT_KEY 1
+
+== ■精霊王 6   [9:47.42  step 35245]
+  9:47.42  CAMERA #104 0506cp.sne key=106 frames 120..150 speed 1 (cut lasts 308 steps = 5.13 s)
+  9:47.42    OBJ_MOTION obj=8(Toan B) 0
+  9:47.42    OBJ_EYE obj=8(Toan B) 14 60
+  9:47.42    OBJ_MOUTH obj=8(Toan B) 7 60
+  9:47.92    FADE_OUT 1, 32
+  9:48.05    FADE_IN 1, 128
+  9:48.05    OBJ_DISP 8(Toan B) OFF
+
+== ■２Ｄ画面 村崩壊画面   [9:48.05  step 35283]
+  9:48.05    SPRITE 2
+  9:49.55    SPRITE 3
+  9:51.05    SPRITE 4
+  9:52.55    SPRITE 0
+
+== ■精霊王 10   [9:52.55  step 35553]
+  9:52.55  CAMERA #105 0510cp.sne key=108 frames 130..160 speed 0.25 (cut lasts 114 steps = 1.90 s)
+  9:52.55    OBJ_DISP 8(Toan B) ON
+  9:52.55    OBJ_EYE obj=8(Toan B) 21 60
+  9:52.55    OBJ_MOUTH obj=8(Toan B) 0 60
+
+== ■精霊王 11   [9:54.45  step 35667]
+  9:54.45  CAMERA #106 0511cp.sne key=109 frames 300..360 speed 0.5 (cut lasts 3 steps = 0.05 s)
+  9:54.45    MESSAGE msg=105 frames=60 pos=(100,350) tail=(200,100)  "(no such message in this bank)"   // 精霊王「人間の欲望が～」
+  9:54.47    WAIT_KEY 1
+
+== ■精霊王 12   [9:54.50  step 35670]
+  9:54.50  CAMERA #107 0512cp.sne key=109 frames 10..310 speed 0.5 (cut lasts 3 steps = 0.05 s)
+  9:54.50    OBJ_DISP 21(Spirit King) OFF
+  9:54.50    OBJ_EYE obj=8(Toan B) 0 60
+  9:54.50    MESSAGE msg=106 frames=300 pos=(400,350) tail=(400,350)  "(no such message in this bank)"   // 精霊王「よいか少年よ～」
+  9:54.52    WAIT_KEY 1
+
+== ■精霊王 13   [9:54.55  step 35673]
+  9:54.55  CAMERA #108 0513cp.sne key=110 frames 80..150 speed 0.5 (cut lasts 62 steps = 1.03 s)
+  9:54.55    OBJ_DISP 8(Toan B) OFF
+  9:54.55    OBJ_DISP 21(Spirit King) ON
+  9:54.55    MESSAGE msg=107 frames=50 pos=(100,350) tail=(320,200)  "(no such message in this bank)"   // 精霊王「わしはおまえに～」
+  9:54.57    WAIT_KEY 1
+  9:54.60    OBJ_STEP obj=21(Spirit King) 1
+  9:54.60    OBJ_MOTION obj=21(Spirit King) 8
+  9:54.62    OBJ_STEP obj=21(Spirit King) 0.2
+  9:54.62    OBJ_MOTION obj=21(Spirit King) 1
+
+== ■精霊王 14   [9:55.58  step 35735]
+  9:55.58  CAMERA #109 0514cp.sne key=111 frames 80..160 speed 0.65 (cut lasts 117 steps = 1.95 s)
+  9:55.58    OBJ_DISP 8(Toan B) ON
+  9:55.58    OBJ_MOTION obj=8(Toan B) 6
+  9:55.58    OBJ_STEP obj=21(Spirit King) 0.1
+  9:55.82    OBJ_MOTION obj=21(Spirit King) 7
+  9:57.53    OBJ_STEP obj=21(Spirit King) 0.05
+
+== ■精霊王 15   [9:57.53  step 35852]
+  9:57.53  CAMERA #110 0515cp.sne key=112 frames 70..205 speed 0.5 (cut lasts 248 steps = 4.13 s)
+  9:57.53    OBJ_DISP 8(Toan B) OFF
+  9:57.53    OBJ_DISP 11(Toan) ON
+  9:57.53    OBJ_MOTION obj=11(Toan) 1
+  9:57.53    OBJ_EYE obj=11(Toan) 14 60
+  9:57.53    OBJ_MOUTH obj=11(Toan) 8 60
+  9:57.53    OBJ_MOTION obj=21(Spirit King) 0
+  9:57.53    SE 0, 40, 43, 127   // アトラ装着
+  9:57.83  SCENE_LOAD 9  (stream norn4/seirei2.pak)
+  9:58.47    OBJ_EYE obj=11(Toan) 15 60
+  9:58.48    OBJ_EYE obj=11(Toan) 16 60
+  9:58.50    OBJ_EYE obj=11(Toan) 17 60
+  9:58.52    OBJ_EYE obj=11(Toan) 16 60
+  9:58.53    OBJ_EYE obj=11(Toan) 15 60
+  9:58.55    OBJ_EYE obj=11(Toan) 14 60
+  9:58.57    OBJ_EYE obj=11(Toan) 15 60
+  9:58.58    OBJ_EYE obj=11(Toan) 16 60
+  9:58.60    OBJ_EYE obj=11(Toan) 17 60
+  9:58.62    OBJ_EYE obj=11(Toan) 16 60
+  9:58.63    OBJ_EYE obj=11(Toan) 15 60
+  9:58.65    OBJ_EYE obj=11(Toan) 14 60
+  9:59.23    OBJ_MOTION2 obj=11(Toan) 2 3
+  10:01.60    SE_STOP 0, 40, 44
+
+== ■精霊王 15b   [10:01.67  step 36100]
+  10:01.67  CAMERA #111 0515bcp.sne key=113 frames 100..145 speed 0.5 (cut lasts 86 steps = 1.43 s)
+  10:01.67    SE 0, 40, 44, 127   // キラキラ
+  10:01.80    SE_STOP 0, 40, 44
+  10:01.80    OBJ_STEP obj=11(Toan) 1
+
+== ■精霊王 16   [10:03.10  step 36186]
+  10:03.10  CAMERA #112 0516cp.sne key=114 frames 160..220 speed 0.5 (cut lasts 119 steps = 1.98 s)
+  10:03.10    OBJ_EYE obj=11(Toan) 0 60
+  10:03.10    OBJ_MOTION obj=11(Toan) 7
+  10:03.10    MESSAGE msg=108 frames=40 pos=(100,350) tail=(470,210)  "(no such message in this bank)"   // 精霊王「この力があれば～」
+  10:03.12    WAIT_KEY 1
+  10:03.15    OBJ_MOTION2 obj=21(Spirit King) 2 4
+  10:03.15    SE 1, 124, 60, 127
+  10:03.28    OBJ_STEP obj=11(Toan) 0.05
+  10:03.42    OBJ_MOTION obj=11(Toan) 5
+  10:03.42    OBJ_EYE obj=11(Toan) 14 60
+  10:03.42    OBJ_MOUTH obj=11(Toan) 7 60
+  10:04.05    FADE_OUT 1, 4
+
+== ■ノルン村へ切り替え   [10:05.08  step 36305]
+  10:05.08  SCENE 9  -> D Spirit King 2 (seirei2.pak)
+  10:05.08    FADE_IN 1, 2
+
+== ■ノルン村 17   [10:05.08  step 36305]
+  10:05.08  CAMERA #113 0517cp.sne key=115 frames 70..210 speed 0.5 (cut lasts 276 steps = 4.60 s)
+  10:05.08    OBJ_MOTION obj=11(Toan) 0
+  10:05.08    OBJ_MOTION obj=21(Spirit King) 0
+  10:05.08    OBJ_EYE obj=11(Toan) 0 60
+  10:05.08    OBJ_MOUTH obj=11(Toan) 0 60
+  10:07.38    OBJ_MOTION obj=21(Spirit King) 6
+
+== ■ノルン村 18   [10:09.68  step 36581]
+  10:09.68  CAMERA #114 0518cp.sne key=116 frames 70..150 speed 0.5 (cut lasts 12 steps = 0.20 s)
+  10:09.68    OBJ_MOTION obj=21(Spirit King) 0
+  10:09.68    MESSAGE msg=109 frames=80 pos=(50,50) tail=(150,200)  "(no such message in this bank)"   // 精霊王「驚いたか～」
+  10:09.70    WAIT_KEY 1
+
+== ■２Ｄ説明画面   [10:09.73  step 36584]
+  10:09.73    SPRITE 5
+  10:09.73    MESSAGE msg=110 frames=100 pos=(50,50) tail=(50,50)  "(no such message in this bank)"   // 精霊王
+  10:09.75    WAIT_KEY 1
+  10:09.78    SPRITE 6
+  10:09.78    MESSAGE msg=111 frames=100 pos=(50,50) tail=(50,50)  "(no such message in this bank)"   // 精霊王
+  10:09.80    WAIT_KEY 1
+  10:09.83    MESSAGE msg=112 frames=100 pos=(50,50) tail=(50,50)  "(no such message in this bank)"   // 精霊王
+  10:09.85    WAIT_KEY 1
+  10:09.88    SPRITE 0
+
+== ■ノルン村 20   [10:09.88  step 36593]
+  10:09.88  CAMERA #115 0520cp.sne key=117 frames 70..150 speed 0.1 (cut lasts 373 steps = 6.22 s)
+  10:09.88    MESSAGE msg=113 frames=20 pos=(50,50) tail=(150,200)  "(no such message in this bank)"   // 精霊王「奴はきっと～」
+  10:09.90    WAIT_KEY 1
+  10:09.93    MESSAGE msg=114 frames=40 pos=(50,50) tail=(150,200)  "(no such message in this bank)"   // 精霊王「わしがアトラに～」
+  10:09.93    OBJ_MOTION2 obj=21(Spirit King) 5 0
+  10:09.95    WAIT_KEY 1
+  10:09.98    OBJ_MOTION2 obj=11(Toan) 6 7
+  10:13.02    MESSAGE msg=115 frames=20 pos=(50,50) tail=(150,200)  "(no such message in this bank)"   // 精霊王「なにをいっているか～」
+  10:13.02    OBJ_MOTION obj=21(Spirit King) 0
+  10:13.03    WAIT_KEY 1
+  10:13.07    OBJ_MOTION2 obj=11(Toan) 8 0
+
+== ■ノルン村 21   [10:16.10  step 36966]
+  10:16.10  CAMERA #116 0521cp.sne key=118 frames 85..180 speed 0.5 (cut lasts 125 steps = 2.08 s)
+  10:16.10    MESSAGE msg=116 frames=80 pos=(50,50) tail=(200,200)  "(no such message in this bank)"   // 精霊王「じゃあ、またな」
+  10:16.12    WAIT_KEY 0
+  10:16.15    FADE_OUT 1, 32
+  10:16.25    FADE_IN 1, 128
+  10:16.25    SE 1, 124, 62, 90
+  10:16.25    OBJ_DISP 21(Spirit King) OFF
+  10:16.25    OBJ_EYE obj=11(Toan) 14 60
+  10:16.25    OBJ_MOUTH obj=11(Toan) 7 60
+  10:16.88    OBJ_MOTION2 obj=11(Toan) 9 10
+
+== ■ノルン村 22   [10:18.18  step 37091]
+  10:18.18  CAMERA #117 0522cp.sne key=119 frames 70..130 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  10:18.18    OBJ_STEP obj=11(Toan) 1
+
+== ■ノルン村 23   [10:20.15  step 37209]
+  10:20.15  CAMERA #118 0523cp.sne key=120 frames 10..120 speed 0.5 (cut lasts 207 steps = 3.45 s)
+  10:20.15    OBJ_DISP 22(butterfly) ON
+  10:20.15    OBJ_DISP 5(Majin hand / butterfly 2) ON
+  10:20.15    OBJ_MOTION obj=22(butterfly) 0
+  10:20.15    OBJ_MOTION obj=5(Majin hand / butterfly 2) 0
+  10:20.15    OBJ_MOTION obj=11(Toan) 11
+  10:20.15    OBJ_EYE obj=11(Toan) 10 60
+  10:20.15    OBJ_MOUTH obj=11(Toan) 0 60
+  10:21.45    OBJ_STEP obj=11(Toan) 0.05
+  10:21.45    OBJ_EYE obj=11(Toan) 11 60
+  10:21.47    OBJ_EYE obj=11(Toan) 12 60
+  10:21.48    OBJ_EYE obj=11(Toan) 13 60
+  10:21.50    OBJ_EYE obj=11(Toan) 12 60
+  10:21.52    OBJ_EYE obj=11(Toan) 11 60
+  10:21.53    OBJ_EYE obj=11(Toan) 10 60
+  10:22.17    OBJ_EYE obj=11(Toan) 23 60
+  10:22.17    OBJ_MOUTH obj=11(Toan) 7 60
+  10:22.80    OBJ_MOTION obj=11(Toan) 12
+
+== ■ノルン村 24 花＆蝶   [10:23.60  step 37416]
+  10:23.60  CAMERA #119 0524cp.sne key=121 frames 10..55 speed 0.5 (cut lasts 88 steps = 1.47 s)
+
+== ■ノルン村 25   [10:25.07  step 37504]
+  10:25.07  CAMERA #120 0525cp.sne key=122 frames 236..260 speed 0.25 (cut lasts 78 steps = 1.30 s)
+  10:25.07    OBJ_MOTION obj=11(Toan) 13
+  10:25.07    OBJ_EYE obj=11(Toan) 0 60
+  10:25.07    OBJ_MOUTH obj=11(Toan) 0 60
+  10:25.63    OBJ_EYE obj=11(Toan) 22 60
+  10:25.63    OBJ_MOUTH obj=11(Toan) 7 60
+  10:25.80    SE 0, 21, 20, 127
+
+== ■ノルン村 26   [10:26.37  step 37582]
+  10:26.37  CAMERA #121 0526cp.sne key=123 frames 206..266 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  10:26.37    OBJ_MOTION2 obj=11(Toan) 14 10
+  10:26.37    OBJ_MOUTH obj=11(Toan) 4 60
+
+== ■ノルン村 27   [10:28.33  step 37700]
+  10:28.33  CAMERA #122 0527cp.sne key=124 frames 206..266 speed 0.5 (cut lasts 118 steps = 1.97 s)
+  10:28.33    OBJ_DISP 11(Toan) OFF
+
+== ■ノルン村 28   [10:30.30  step 37818]
+  10:30.30  CAMERA #123 0528cp.sne key=125 frames 206..266 speed 0.5 (cut lasts 116 steps = 1.93 s)
+  10:30.30    OBJ_DISP 11(Toan) ON
+  10:30.30    OBJ_EYE obj=11(Toan) 23 60
+  10:30.30    OBJ_MOUTH obj=11(Toan) 5 60
+  10:31.93    OBJ_STEP obj=11(Toan) 1
+
+== ■ノルン村 29   [10:32.23  step 37934]
+  10:32.23  CAMERA #124 0529cp.sne key=126 frames 206..306 speed 0.1 (cut lasts 246 steps = 4.10 s)
+  10:32.23    OBJ_DISP 22(butterfly) OFF
+  10:32.23    OBJ_DISP 5(Majin hand / butterfly 2) OFF
+  10:32.23    OBJ_MOTION obj=11(Toan) 0
+  10:33.60    MESSAGE msg=117 frames=20 pos=(400,300) tail=(400,300)  "(no such message in this bank)"
+  10:33.62    WAIT_KEY 1
+  10:33.65    MESSAGE msg=118 frames=20 pos=(400,300) tail=(400,300)  "(no such message in this bank)"
+  10:33.67    WAIT_KEY 1
+  10:33.70    MESSAGE msg=119 frames=20 pos=(400,300) tail=(400,300)  "(no such message in this bank)"
+  10:33.72    WAIT_KEY 1
+  10:33.75    MESSAGE msg=120 frames=20 pos=(400,300) tail=(400,300)  "(no such message in this bank)"
+  10:33.77    WAIT_KEY 1
+  10:33.80    FADE_OUT 0, 1
+  10:36.33    END 

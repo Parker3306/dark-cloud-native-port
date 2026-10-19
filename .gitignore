@@ -1,0 +1,38 @@
+# Game data – never commit
+iso/
+extracted/
+ghidra/
+data/
+work/*
+*.iso
+
+# Downloaded tools – reinstall from README (but keep our PCSX2 config and patches)
+tools/*
+!tools/pcsx2/
+tools/pcsx2/*
+!tools/pcsx2/gamesettings/
+!tools/pcsx2/cheats/
+
+# native port: build output, third-party binding library (clone with: git clone --depth 1 --branch 10.0.0-stable https://github.com/godotengine/godot-cpp native/godot-cpp), Godot caches, compiled extension
+native/build/
+native/godot-cpp/
+native/godot/.godot/
+native/godot/bin/
+
+# more build output / strays
+native/dccore/build/
+native/**/*.obj
+8
+C
+*.uid.tmp
+
+# keep our own scripts: the python tooling and the regression / harness scripts of work/
+!tools/dc/
+!work/smoke.sh
+!work/coop_smoke.sh
+!work/coop_back_only.sh
+!work/back_smoke.py
+!work/back_all.py
+!work/trap_smoke.py
+!work/sweep.py
+__pycache__/

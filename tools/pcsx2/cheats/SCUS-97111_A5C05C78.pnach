@@ -1,0 +1,7 @@
+gametitle=Dark Cloud (SCUS-97111)
+
+[Graphics\Max LOD - always draw the most detailed model]
+author=DarkCloud project
+description=CObjectFrame::DrawLOD normally swaps to lower-detail models by camera distance. This skips the distance check so the finest LOD the caller allows is always drawn. Untested; raises EE/VU1 load, so if it slows down raise EE Cycle Rate in game properties.
+; 0x00157298: bne s3,s2,0x001572d4 -> nop (falls through to the "min LOD == max LOD" path)
+patch=1,EE,00157298,word,00000000

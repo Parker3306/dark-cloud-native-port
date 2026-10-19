@@ -1,0 +1,227 @@
+== A obj0 Seeda   [dungeon/dungeon.pak : 01c07a.cfg]
+    0: frames 10..11  speed 0   0 立ち
+    1: frames 10..35  speed 0.15   1 振り向き
+    2: frames 35..45  speed 0.1   2 振り向きループ
+    3: frames 70..80  speed 0.1   3 立ち
+    4: frames 55..65  speed 0.1   4 立ち
+    5: frames 85..105  speed 0.8   5 走り出し
+== A obj1 Majin   [dungeon/dungeon.pak : 01c08a.cfg]
+    0: frames 115..116  speed 0.1   0 飛び
+    1: frames 10..30  speed 0.1   1 着地
+    2: frames 60..80  speed 0.1   2 口あけ
+    3: frames 70..80  speed 0.1   3 口あけループ
+    4: frames 100..100  speed 0.1   4 基本立ち
+    5: frames 40..50  speed 0.01   5 立ち
+    6: frames 120..148  speed 0.2   6 腰揺らし
+    7: frames 155..160  speed 0.1   7 下見下げループ
+    8: frames 161..199  speed 0.1   8 ちょっと待った
+    9: frames 205..215  speed 0.1   9 見下げクチパク
+== A obj2 Priest   [dungeon/dungeon.pak : 01c11a.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 30..50  speed 0.4   1 歩き
+    2: frames 60..80  speed 0.1   2 左を向く
+    3: frames 80..100  speed 0.4   3 左を向いたまま歩く
+    4: frames 100..120  speed 0.05   4 左をみたまま左手
+    5: frames 130..140  speed 0.1   5 左手ループ
+    6: frames 145..165  speed 0.1   6 左手から立ち
+    7: frames 165..185  speed 0.4   7 手もみ歩き
+    8: frames 190..200  speed 0.1   8 左を見て正面
+    9: frames 210..220  speed 0.1   9 上向きループ
+   10: frames 230..250  speed 0.2   10 よろめき
+   11: frames 260..270  speed 0.2   11 右を向く
+   12: frames 270..280  speed 0.1   12 右向きループ
+   13: frames 285..294  speed 0.1   13 驚き
+   14: frames 295..315  speed 0.1   14 魔人に捕まる
+   15: frames 315..325  speed 0.1   15 ジタバタ
+   16: frames 315..365  speed 0.1   16 食べられる
+   17: frames 294..294  speed 0   17 驚きループ
+   18: frames 370..380  speed 0.12   18 ふんばり
+== A obj3 Flag   [dungeon/dungeon.pak : 01c09a.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 30..50  speed 0.35   1 歩き
+    2: frames 60..70  speed 0.1   2 左を向く
+    3: frames 80..90  speed 0.3   3 右下を向く（半歩）
+    4: frames 90..110  speed 0.35   4 右下を向きつつ歩きループ
+    5: frames 120..130  speed 0.1   5 後ろ手ループ
+    6: frames 140..150  speed 0.1   6 上向きループ
+    7: frames 160..180  speed 0.2   7 よろめき
+    8: frames 190..200  speed 0.1   8 左向きループ
+    9: frames 200..210  speed 0.2   9 左から正面へ
+   10: frames 220..240  speed 0.2   10 上を見たまま歩き
+   11: frames 250..260  speed 0.2   11 左を向く
+   12: frames 260..270  speed 0.1   12 左向きループ
+   13: frames 280..290  speed 0.2   13 驚きループ
+   14: frames 300..317  speed 0.4   14 司祭がつかまれたとき
+   15: frames 317..318  speed 0   15 ループ
+   16: frames 325..335  speed 0.11   16 ふんばり
+== A obj4 Majin bust   [chara/01c08b.chr : 01c08b.cfg]
+    0: frames 1..1  speed 0.01   0 立ち
+    1: frames 10..20  speed 0.1   1 下を向く
+    2: frames 20..50  speed 0.1   2 欠伸
+    3: frames 55..75  speed 0.1   3 フラッグを見つめる
+    4: frames 80..100  speed 0.1   4 はっとする
+    5: frames 120..205  speed 0.1   5 司祭を食べる
+== A obj5 Majin hand   [chara/01c08c.chr : 01c08c.cfg]
+    0: frames 1..2  speed 0.1   
+    1: frames 10..20  speed 0.1   1 指差し
+    2: frames 25..55  speed 0.1   2 つかみ上げ
+    3: frames 19..20  speed 0.1   3 指差しループ
+    4: frames 10..10  speed 0.1   4 つかみ上げまち
+== A obj6 leader (phase 1a)   [chara/01p19a1a.chr : 01p19a1a.cfg]
+    0: frames 100..980  speed 0.5   ダンス１
+== A obj7 dancer (phase 1a)   [chara/01p17a1a.chr : 01p17a1a.cfg]
+    0: frames 1..754  speed 0.5   ダンス１
+    1: frames 1..10  speed 0.5   伏せたまま
+== B obj9 Paige   [chara/03p09a.chr : 03p09a.cfg]
+    0: frames 20..40  speed 0.4   0 走り
+    1: frames 50..65  speed 0.1   1 ドア開け
+    2: frames 60..65  speed 0.1   2 レネ向き
+    3: frames 155..165  speed 0.1   3 レネ向きループ
+    4: frames 65..109  speed 0.25   4 トアン向き
+    5: frames 100..108  speed 0.1   5 トアン向きループ
+    6: frames 138..150  speed 0.2   6 ドア閉め
+    7: frames 110..138  speed 0.2   7 カット５用
+    8: frames 138..138  speed 0   8 カット５用ループ
+    9: frames 50..51  speed 0   1 ドア開け待機
+== B obj10 Rene   [chara/03p10a.chr : 03p10a.cfg]
+    0: frames 5..15  speed 0.1   0 座りループ
+    1: frames 20..30  speed 0.1   1 左見るループ
+    2: frames 31..36  speed 0.15   2 左から正面
+    3: frames 40..60  speed 0.25   3 「ほらみなさい」
+    4: frames 65..95  speed 0.25   4 かたづけ
+    5: frames 100..120  speed 0.2   5 立ち上がり
+    6: frames 126..146  speed 0.3   6 食器もちあるき
+    7: frames 95..95  speed 0   7 かたづけループ
+== B obj8 Toan   [chara/03c01d.chr : 03c01d.cfg]
+    0: frames 5..15  speed 0.1   0 座りループ
+    1: frames 20..25  speed 0.15   1 前から右
+    2: frames 26..32  speed 0.1   2 右ループ
+    3: frames 33..38  speed 0.15   3 右から前
+    4: frames 40..50  speed 0.15   4 前から右（レネを視線で追う）
+    5: frames 51..56  speed 0.15   5 正面のスープを見る
+    6: frames 60..150  speed 0.3   6 飲みから帽子かぶり
+    7: frames 50..50  speed 0.1   7 ４のループ
+    8: frames 150..150  speed 0.1   8 帽子かぶりループ
+== B obj11 Toan   [chara/03c01d2.chr : 03c01d2.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 30..50  speed 0.15   1 歩き
+    2: frames 70..90  speed 0.1   2 走り
+    3: frames 100..120  speed 0.15   3 引き開き
+    4: frames 130..150  speed 0.15   4 押し開き
+    5: frames 160..170  speed 0.15   5 立ち上がり
+== B komono   [toan/03komono.chr : 03komono.cfg]
+    0: frames 5..10  speed 0.1   0 仮
+== C obj1 Majin   [norn2/majin.pak : 04c08a.cfg]
+    0: frames 10..20  speed 0.2   0 立ちループ
+    1: frames 160..160  speed 0   1 立ちループ
+    2: frames 35..45  speed 0.2   2 手をあげる
+    3: frames 45..80  speed 0.2   3 発射～後方回転
+    4: frames 60..80  speed 0.2   4 ■削除 後方回転
+    5: frames 80..100  speed 0.2   5 へそをさす
+    6: frames 100..120  speed 0.2   6 へそさしループ
+    7: frames 120..140  speed 0.2   7 へそビーム（ 129 フレーム発射）
+    8: frames 140..160  speed 0.2   8 足を鳴らす
+    9: frames 160..190  speed 0.2   9 両足から発射（右168 フレーム、左176 フレーム）
+   10: frames 190..240  speed 0.2   10 横回転～前倒し
+   11: frames 220..240  speed 0.2   11 ■削除 前倒し
+   12: frames 240..350  speed 0.2   12 口から発射（ 241フレーム）
+   13: frames 260..275  speed 0.2   13 ■削除 じたばた
+   14: frames 275..285  speed 0.2   14 ■削除 頭から発射（275 フレーム）
+   15: frames 285..325  speed 0.2   15 ■削除 7, 8，9発目連続発射（ 292.296.317フレーム）
+   16: frames 325..350  speed 0.2   16 ■削除 尻より10発目（ 326フレーム）のあと一回転
+   17: frames 360..380  speed 0.2   17 着地モーション（353 接地）
+   18: frames 20..30  speed 0.05   18 立ちループ
+   19: frames 35..35  speed 0   19 手を上げるまち
+   20: frames 405..415  speed 0.1   20 立ちループ
+== C obj3 Flag   [norn2/majin.pak : 04c09a.cfg]
+    0: frames 10..20  speed 0.2   0立ちループ
+    1: frames 20..30  speed 0.2   1立ちループ
+    2: frames 35..45  speed 0.2   2手をあげる
+    3: frames 45..80  speed 0.2   3一発目～後方回転
+    4: frames 60..80  speed 0.2   4■削除 後方回転
+    5: frames 80..100  speed 0.2   5へそをさす
+    6: frames 100..120  speed 0.2   6へそさしループ
+    7: frames 120..140  speed 0.2   7へそビーム（ 129 フレーム発射）
+    8: frames 140..160  speed 0.2   8足を鳴らす
+    9: frames 160..190  speed 0.2   9両足から発射（右168 フレーム、左176 フレーム）
+   10: frames 190..240  speed 0.2   10横回転～前倒し
+   11: frames 220..240  speed 0.2   11■削除
+   12: frames 240..350  speed 0.2   12口から発射（ 241フレーム）
+   13: frames 260..275  speed 0.2   13■削除 じたばた
+   14: frames 275..285  speed 0.2   14■削除 頭から発射（275 フレーム）
+   15: frames 285..325  speed 0.2   15■削除 7，8，9発目連続発射（ 292.296.317フレーム）
+   16: frames 325..350  speed 0.2   16■削除 尻より10発目（ 326フレーム）のあと一回転
+   17: frames 350..370  speed 0.2   17着地モーション（353 接地）
+   18: frames 420..432  speed 0.2   18やれっ
+   19: frames 432..442  speed 0.2   19やれループ
+== C obj4 Majin bust   [norn2/majinb.pak : 04c08b.cfg]
+    0: frames 5..5  speed 0   
+    1: frames 5..40  speed 0.3   笑い19用
+    2: frames 45..67  speed 0.3   雄たけび29用
+== C obj11 Toan   [norn2/norn2b.pak : 04c01d.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 35..55  speed 0.3   1 歩き
+    2: frames 70..90  speed 0.5   2 走り
+== C obj12 Gina   [norn2/norn2b.pak : 04p03a.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 30..50  speed 0.5   1 走り
+    2: frames 60..90  speed 0.5   2 会話
+== C obj13 Karl   [norn2/norn2b.pak : 04p08a.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 30..50  speed 0.3   1 歩き
+    2: frames 60..100  speed 0.2   2 会話
+    3: frames 120..140  speed 0.5   3 走り
+== C obj14 Ornet   [norn2/ndance.pak : 04p05b.cfg]
+    0: frames 1..1000  speed 0.5   
+== C obj15 Macho   [norn2/ndance.pak : 04p01a.cfg]
+    0: frames 300..600  speed 0.5   
+== C obj16 Claude   [norn2/ndance.pak : 04p12a.cfg]
+    0: frames 300..600  speed 0.5   
+== C obj17 Little Macho   [norn2/norn2b.pak : 04p07a.cfg]
+    0: frames 10..30  speed 0.3   
+== C obj18 Odd   [norn2/norn2b.pak : 04p02a.cfg]
+    0: frames 10..30  speed 0.3   ギター演奏
+    1: frames 40..60  speed 0.5   走り
+== C obj19 village dancer m   [norn2/ndance.pak : 04p15a.cfg]
+    0: frames 1..1000  speed 0.5   
+    1: frames 1..1000  speed 0.5   
+== C obj20 village dancer f   [norn2/ndance.pak : 04p16a.cfg]
+    0: frames 1..1000  speed 0.5   
+    1: frames 1..1000  speed 0.5   
+== D obj8 Toan   [norn4/seirei.pak : 05c01d.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 60..100  speed 0.2   1 顔上げ
+    2: frames 101..110  speed 0.1   2 顔上げR
+    3: frames 115..128  speed 0.2   3 起き上がり
+    4: frames 130..135  speed 0.1   4 うつむき
+    5: frames 136..145  speed 0.1   5 うつむきR
+    6: frames 155..165  speed 0.1   6 逃げ腰R
+    7: frames 60..61  speed 0   7 うつぶせ
+== D obj11 Toan 2   [norn4/seirei.pak : 05c01e.cfg]
+    0: frames 10..20  speed 0.1   0  立ち
+    1: frames 75..85  speed 0.1   1  プリズム出現ループ
+    2: frames 86..96  speed 0.25   2  手上に上げる
+    3: frames 97..107  speed 0.2   3  手上に上げるR１
+    4: frames 108..118  speed 0.2   4  １から立ちに２
+    5: frames 119..130  speed 0.15   5  ２から驚き
+    6: frames 135..145  speed 0.25   6  立ちからプリズム見る３
+    7: frames 146..156  speed 0.1   7  ３R
+    8: frames 157..199  speed 0.35   8  ３から頭ポリポリ＞立ち
+    9: frames 200..205  speed 0.1   9  立ち＞上向く４
+   10: frames 206..216  speed 0.1   10 ４R
+   11: frames 219..229  speed 0.1   11 遠く見るR５
+   12: frames 230..235  speed 0.1   12 ５下向く
+   13: frames 236..260  speed 0.25   13 しゃがみ一連
+   14: frames 265..275  speed 0.25   14 しゃがみから立ち
+== D obj21 Spirit King   [norn4/seirei.pak : 05c03c.cfg]
+    0: frames 10..20  speed 0.1   0 立ち
+    1: frames 80..90  speed 0.1   1 杖振りかぶり
+    2: frames 95..110  speed 0.2   2 魔法
+    3: frames 115..149  speed 0.2   3 指し～広げ
+    4: frames 150..160  speed 0.1   4 手の広げＲ
+    5: frames 161..174  speed 0.2   5 手の広げ立ち
+    6: frames 40..60  speed 0.4   6 歩き
+    7: frames 180..190  speed 0.1   7 1のループ
+    8: frames 80..80  speed 0   8 1まち
+== D obj22 butterfly   [norn4/seirei2.pak : buterfly.cfg]
+    0: frames 1..20  speed 0.5   0 立ち
