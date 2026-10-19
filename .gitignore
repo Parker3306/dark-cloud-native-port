@@ -36,3 +36,4 @@ C
 !work/trap_smoke.py
 !work/sweep.py
 __pycache__/
+!work/boss_check.py

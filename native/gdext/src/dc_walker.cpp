@@ -351,7 +351,7 @@ void DcWalker::step_ticks(int n) {
             if (coop_role_ != 2) world_->step_ai();   // (a co-op client's monsters are the host's)
             {   // (tests: how close did the player's spheres come to a body sphere that was on?)
                 for (const dccore::MonsterActor &m : world_->actors) {
-                    if (m.state == -1 || m.hp < 1 || m.slot != 0) continue;   // (the boss body: slot 0)
+                    if (m.state == -1 || m.hp < 1) continue;
                     for (const dccore::BodyCol &b : m.body_cols) {
                         if (!b.active) continue;
                         if (b.win_start != 0.0f && (m.motion.time <= b.win_start || b.win_end < m.motion.time)) continue;
