@@ -37,3 +37,6 @@ C
 !work/sweep.py
 __pycache__/
 !work/boss_check.py
+
+# portkit: run logs, screenshot captures and baselines (game renders: never commit)
+.portkit/

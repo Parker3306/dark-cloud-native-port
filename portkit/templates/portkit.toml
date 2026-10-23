@@ -1,0 +1,61 @@
+# portkit manifest: the checks and screenshot shots of ONE game port. Format: portkit/PORTKIT.md. Run: python portkit/portkit.py check --list
+
+[project]
+name = "My game port"
+root = "."                                   # relative to this file; commands run from here unless a check says `cwd`
+# How a command STRING is run. List form because of spaces in paths. Windows with Git for Windows:
+shell = ["C:/Program Files/Git/bin/bash.exe", "-c"]
+# shell = ["bash", "-c"]                     # Linux / macOS
+[project.env]                                # environment for every command
+# GODOT = "C:/path/to/Godot_console.exe"
+
+[defaults]
+timeout = 600                                # seconds per command
+
+# ---------------------------------------------------------------------------------------------------------------------------- checks
+# A check passes when the exit code is in expect_exit (default [0]), no fail_regex matches the log, every pass_regex matches,
+# and (count_regex, count_min) has enough matching lines. summary_regex: the last matching line is shown (group 1 if there is one).
+[[check]]
+name = "unit"
+desc = "unit tests of the core library"
+cmd = "echo replace me"
+tags = ["fast"]
+pass_regex = ["replace me"]
+
+# [[check]]
+# name = "regression"
+# cmd = "bash tests/regression.sh"           # prints 'ok: ...' / 'FAIL: ...' lines
+# count_regex = "^ok:"                       # the summary shows how many
+# count_min = 10
+# fail_regex = ["^FAIL"]
+# tags = ["fast", "game"]
+# retries = 1                                # a failing run is repeated ...
+# retry_regex = "timed out|Connection reset" # ... when the log matches this (without it: always)
+# before_retry = "bash tools/restart_emulator.sh"
+# requires = ["iso/game.iso"]                # the check is SKIPPED when a file is missing
+# timeout = 900
+# cwd = "native"
+# env = { SOMETHING = "1" }
+# prep = "bash tools/reset.sh"               # before every attempt
+# group = "emulator"                         # see [[group]]
+
+# [[group]]                                  # shared setup / teardown for checks that need the same thing (an emulator, a server)
+# name = "emulator"
+# setup = "bash tools/start_emulator.sh"
+# teardown = "bash tools/stop_emulator.sh"
+
+# ---------------------------------------------------------------------------------------------------------------------------- screenshots
+[shots]
+# dir      = ".portkit/shots/current"        # captures are written here
+# baseline = ".portkit/shots/baseline"       # accepted images (game renders: keep them out of git)
+threshold = 8                                # per-channel difference that makes a pixel "changed"
+max_changed_pct = 0.3                        # a shot fails above this percentage of changed pixels
+
+# [[shot]]
+# name = "title_screen"
+# cmd = "\"$GODOT\" --path game res://main.tscn -- --shot {out}"   # must write the image to {out} (or set `out`)
+# out = "{dir}/{name}.png"                   # default; {dir} {name} {root} {out} can be used in cmd
+# masks = [[0, 0, 200, 40]]                  # x, y, w, h regions to ignore (clocks, counters, random effects)
+# max_changed_pct = 1.0
+# tags = ["menu"]
+# timeout = 120

@@ -1,0 +1,238 @@
+# portkit manifest of the Dark Cloud native port. Reference: portkit/PORTKIT.md.   python portkit/portkit.py check --list   |   python portkit/portkit.py shots list
+
+[project]
+name = "Dark Cloud native port"
+root = "."
+shell = ["C:/Program Files/Git/bin/bash.exe", "-c"]
+[project.env]
+GODOT = "${LOCALAPPDATA}/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.7.2-stable_win64_console.exe"
+
+[defaults]
+timeout = 900
+
+# ---------------------------------------------------------------------------------------------------------------------------- checks
+[[check]]
+name = "core_tests"
+desc = "build dccore (all command-line tools) and run its unit tests"
+cmd = "powershell -NoProfile -File native/build_core.ps1"
+pass_regex = ["100% tests passed"]
+fail_regex = ["FAILED:", "error:"]
+summary_regex = "(\\d+% tests passed.*)"
+tags = ["build", "fast"]
+
+[[check]]
+name = "gdext_build"
+desc = "build the Godot extension (and run the tests)"
+cmd = "powershell -NoProfile -File native/build.ps1"
+pass_regex = ["100% tests passed"]
+fail_regex = ["FAILED:", "error:"]
+summary_regex = "(\\d+% tests passed.*)"
+tags = ["build"]
+
+[[check]]
+name = "smoke"
+desc = "tools, a godot town / shop / dungeon / opening run, python scripts"
+cmd = "bash work/smoke.sh"
+count_regex = "^ok:"
+count_min = 10
+fail_regex = ["^FAIL", "^missing"]
+tags = ["fast", "game"]
+
+[[check]]
+name = "sweep"
+desc = "every dungeon floor type builds and runs (no script errors)"
+cmd = "python -I work/sweep.py"
+pass_regex = ["problems: 0"]
+summary_regex = "(problems: \\d+)"
+tags = ["game"]
+
+[[check]]
+name = "coop_smoke"
+desc = "two godot instances on this PC play together (town, dungeon, chests, back floor, Dran tiles)"
+cmd = "bash work/coop_smoke.sh"
+count_regex = "^ok:"
+count_min = 10
+fail_regex = ["^FAIL"]
+timeout = 700
+tags = ["coop", "slow"]
+
+[[check]]
+name = "boss_d01"
+desc = "the d01 boss (Dran) is beaten by Toan (bombs), Ruby and Toan"
+cmd = "python -I work/boss_check.py 12000 d01"
+count_regex = "CLEARED"
+count_min = 3
+tags = ["boss", "slow"]
+
+[[check]]
+name = "boss_d02"
+cmd = "python -I work/boss_check.py 8000 d02"
+count_regex = "CLEARED"
+count_min = 2
+tags = ["boss", "slow"]
+
+[[check]]
+name = "boss_d05"
+desc = "d05: Toan clears it (the others are character-specific by the game's data)"
+cmd = "python -I work/boss_check.py 12000 d05"
+count_regex = "CLEARED"
+count_min = 1
+tags = ["boss", "slow"]
+
+# Live comparisons with the real game in PCSX2 (need the patched ISO and the emulator; the emulator crashes now and then, so a failing run is repeated after a reset)
+[[check]]
+name = "live_floor_d01"
+desc = "whole floor start vs the real game: layout, chests, mimics, 15 + 8 monsters (dungeon 1, floor 2)"
+cmd = "python -I -u tools/dc/validate_back_all.py 6 --dungeon 0 --floor 2"
+requires = ["iso/Dark Cloud (USA).patched.iso"]
+pass_regex = ["mismatching floors: [0-1] of 6"]
+summary_regex = "(mismatching floors: .*)"
+retries = 2
+retry_regex = "TimeoutError|ConnectionReset|WinError|Traceback"
+before_retry = "bash tools/dc/reset_game.sh"
+timeout = 400
+tags = ["live", "slow"]
+
+[[check]]
+name = "live_floor_d05"
+desc = "same for dungeon 5 (the scenery blocks of buildDummyModel)"
+cmd = "python -I -u tools/dc/validate_back_all.py 6 --dungeon 4 --floor 2"
+requires = ["iso/Dark Cloud (USA).patched.iso"]
+pass_regex = ["mismatching floors: [0-1] of 6"]
+summary_regex = "(mismatching floors: .*)"
+retries = 2
+retry_regex = "TimeoutError|ConnectionReset|WinError|Traceback"
+before_retry = "bash tools/dc/reset_game.sh"
+timeout = 400
+tags = ["live", "slow"]
+
+# ---------------------------------------------------------------------------------------------------------------------------- screenshots
+# These run the harness scenes (manual mode: only the ticks asked for, so the images are repeatable). Captures: .portkit/shots/current, baselines: .portkit/shots/baseline.
+[shots]
+threshold = 8
+max_changed_pct = 0.3
+
+[[shot]]
+name = "town_e01_start_gate"
+desc = "new game: the hero at the gate of the empty Norune"
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -1 --complete 0 --out {dir}/{name} --shots 600"
+out = "{dir}/{name}_t600.png"
+tags = ["town"]
+
+[[shot]]
+name = "town_e01_idle_stairs_foot"
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -2 --complete 0 --teleport 0,0,480 --script none:5 --out {dir}/{name} --shots 8"
+out = "{dir}/{name}_t8.png"
+tags = ["town"]
+
+[[shot]]
+name = "town_e01_run_up_stairs"
+max_changed_pct = 1.5   # (the running animation is advanced by real time, so the pose differs a little from run to run)
+desc = "the hero runs (animated legs and arms) and climbs the first stairs"
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -2 --complete 0 --teleport 0,0,480 --script none:5,down:300 --out {dir}/{name} --shots 60"
+out = "{dir}/{name}_t60.png"
+tags = ["town", "hero"]
+
+[[shot]]
+name = "town_e01_complete_run"
+max_changed_pct = 1.5   # (the running animation is advanced by real time, so the pose differs a little from run to run)
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -2 --complete 1 --teleport 103,10,300 --script none:5,up:200 --out {dir}/{name} --shots 60"
+out = "{dir}/{name}_t60.png"
+tags = ["town", "hero"]
+
+[[shot]]
+name = "town_e02_run"
+max_changed_pct = 1.5   # (the running animation is advanced by real time, so the pose differs a little from run to run)
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e02 --event -2 --complete 1 --script none:5,up:40 --out {dir}/{name} --shots 30"
+out = "{dir}/{name}_t30.png"
+tags = ["town", "hero"]
+
+[[shot]]
+name = "dungeon_d01_f1"
+cmd = "\"$GODOT\" --path native/godot res://play.tscn -- --dungeon 0 --floor 1 --seed 7 --god 1 --script none:1 --out {dir}/{name} --shots 240"
+out = "{dir}/{name}_t240.png"
+tags = ["dungeon"]
+
+[[shot]]
+name = "boss_d02_arena"
+cmd = "\"$GODOT\" --path native/godot res://play.tscn -- --dungeon 1 --floor 16 --seed 7 --god 1 --script none:1 --out {dir}/{name} --shots 330"
+out = "{dir}/{name}_t330.png"
+tags = ["dungeon", "boss"]
+
+[[shot]]
+name = "boss_d01_arena"
+cmd = "\"$GODOT\" --path native/godot res://play.tscn -- --dungeon 0 --floor 14 --seed 7 --god 1 --script none:1 --game-flag 24,32 --out {dir}/{name} --shots 600"
+out = "{dir}/{name}_t600.png"
+tags = ["dungeon", "boss"]
+
+# ---------------------------------------------------------------------------------------------------------------------------- the other tools
+[status]
+todo = "TODO.md"
+pickup = "notes/pickup.md"
+
+[find]
+notes = ["notes", "README.md", "CLAUDE.md"]
+code = ["native/dccore", "native/gdext/src", "native/godot", "tools/dc", "coop", "work"]
+
+[logfilter]
+drop = ['^Godot Engine v', '^Vulkan', '^OpenGL', '^Mesa', '^WARNING: .*(ObjectDB|resources still in use)', '^\s*at: ', '^Tesseract']
+
+[emu]
+exe = "tools/pcsx2/pcsx2-qt.exe"
+iso = "iso/Dark Cloud (USA).patched.iso"
+args = ["-fastboot", "--"]
+cwd = "tools/pcsx2"
+pine_port = 28011
+state_slot = 1
+boot_timeout = 180
+drop_path = ["Tesseract"]
+ready_cmd = "python -I tools/dc/live_ready.py"
+
+[decomp]
+source = "work/decomp/all_dun.c"
+symbols = ["notes/symbols.csv"]
+dump_cmd = "bash scripts/ghidra/run_all.sh"
+
+[bisect]
+link = ["iso", "data", "extracted"]
+prep = "powershell -NoProfile -File native/build_core.ps1"
+
+[replays]
+dir = ".portkit/replays"
+env_var = "PK_RECORD_PAD"
+
+[[replay]]
+name = "d01_dran_walk"
+desc = "a human walks to Dran and fights for a few seconds (dungeon 1, floor 14, boss unlocked)"
+record_cmd = "\"$GODOT\" --path native/godot res://play.tscn -- --dungeon 0 --floor 14 --seed 7 --game-flag 24,32"
+cmd = "\"$GODOT\" --path native/godot res://play.tscn -- --dungeon 0 --floor 14 --seed 7 --game-flag 24,32 --pad-file {input} --out {dir}/{name} --shots 1200"
+out = "{dir}/{name}_t1200.png"
+max_changed_pct = 3.0
+tags = ["boss"]
+
+[[replay]]
+name = "town_e01_stairs"
+desc = "a human runs from the gate to the first building (stairs)"
+record_cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -2 --complete 0 --teleport 0,0,480"
+cmd = "\"$GODOT\" --path native/godot res://town_play.tscn -- --town e01 --event -2 --complete 0 --teleport 0,0,480 --pad-file {input} --out {dir}/{name} --shots 600"
+out = "{dir}/{name}_t600.png"
+max_changed_pct = 3.0
+tags = ["town"]
+
+[multi_layout]
+screen = [1920, 1080]
+top = 40
+
+[[multi]]
+name = "coop_boss"
+desc = "host + guest in the d02 boss floor (two windows, DualShock-ready with --interactive)"
+timeout = 120
+start_gap = 4
+expect = [ {role = "host", regex = "COOP peers 1"} ]
+forbid = ["SCRIPT ERROR", "Traceback"]
+[[multi.instance]]
+role = "host"
+cmd = "\"$GODOT\" --path native/godot --position {x},{y} --resolution {w}x{h} res://play.tscn -- --dungeon 1 --floor 16 --seed 7 --coop host --god 1"
+[[multi.instance]]
+role = "guest"
+cmd = "\"$GODOT\" --path native/godot --position {x},{y} --resolution {w}x{h} res://play.tscn -- --dungeon 1 --floor 16 --seed 7 --coop join:127.0.0.1 --god 1"
