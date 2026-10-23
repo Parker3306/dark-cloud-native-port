@@ -34,6 +34,8 @@ class DcCharacter : public Node3D {
     DcCharacter *held_ = nullptr;   // a weapon model that hangs on a joint of this one (co-op puppets)
     int held_joint_ = -1;
     dccore::Pose pose_;   // the pose last applied
+    struct JointOverride { Vector3 rot, pos; bool set_rot = false, set_pos = false; };
+    std::map<int, JointOverride> joint_override_;
     void apply_pose();
 
 protected:
@@ -62,6 +64,8 @@ public:
     void set_effect_look(bool on);   // effect models: additive blending, unshaded, both sides, no depth writes
     // Co-op: the character wears player `index`'s colour (clothes recoloured, see dccore/recolor.h); -1 = the original colours
     void set_player_color(int index);
+    // A script (_SET_OBJ_ROT / _OBJ_ANIME on a _HOBJ_CHARA handle) turns or moves a frame of this character: the pose keeps it on top of the motion (frames that the motion has no track for, like a prop's propeller).
+    void set_joint_override(int joint, const Vector3 &rot, const Vector3 &pos, bool set_rot, bool set_pos);
     void set_held_weapon(DcCharacter *weapon, int joint);
     void set_character(std::shared_ptr<dccore::Character> ch) { ch_ = std::move(ch); cur_set_ = -1; }   // the same nodes with a character that has more motions (an event added them)   // the weapon follows the joint (a puppet holds his sword)
     int get_player_color() const { return color_index_; }

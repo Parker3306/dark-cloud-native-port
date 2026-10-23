@@ -859,6 +859,27 @@ bool MonsterWorld::set_gate_key(int item) {
 }
 
 void MonsterWorld::drop_loot(MonsterActor& a) {
+    const size_t events_before = events.size();
+    drop_loot_base(a);
+    if (coop_players > 1) {   // co-op balance: with probability (mult - 1) whatever this monster dropped drops a second time (expected drops = base * mult)
+        const float extra = coop_drop_mult(coop_players) - 1.0f;
+        bool dropped = false;
+        for (size_t i = events_before; i < events.size(); ++i)
+            if (events[i].kind == CombatEvent::DropGold || events[i].kind == CombatEvent::DropItem) dropped = true;
+        if (dropped && percent_roll(*rng_) < extra * 100.0f) {
+            const size_t end = events.size();
+            for (size_t i = events_before; i < end; ++i) {
+                CombatEvent e = events[i];
+                if (e.kind == CombatEvent::DropGold || e.kind == CombatEvent::DropItem) {
+                    e.pos[0] += 6.0f;   // (next to the first one)
+                    events.push_back(e);
+                }
+            }
+        }
+    }
+}
+
+void MonsterWorld::drop_loot_base(MonsterActor& a) {
     // the part of CMonstorUnit::Step that runs when a monster has just died (state -1)
     const int ch = status.character();
     const float pos[3] = {a.pos[0], a.pos[1], a.pos[2]};

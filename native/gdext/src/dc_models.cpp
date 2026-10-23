@@ -1,4 +1,5 @@
 #include "dc_models.h"
+#include "dc_pad.h"
 #include <cstdlib>
 #include "dc_opening.h"
 
@@ -45,6 +46,8 @@ void DcModels::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_last_info"), &DcModels::get_last_info);
     ClassDB::bind_method(D_METHOD("new_game", "seed"), &DcModels::new_game);
     ClassDB::bind_method(D_METHOD("set_coop_floor", "seed", "host_status"), &DcModels::set_coop_floor);
+    ClassDB::bind_method(D_METHOD("set_coop_players", "n"), &DcModels::set_coop_players);
+    ClassDB::bind_method(D_METHOD("pad_state"), &DcModels::pad_state);
     ClassDB::bind_method(D_METHOD("clear_coop_floor"), &DcModels::clear_coop_floor);
     ClassDB::bind_method(D_METHOD("enter_dungeon_reset"), &DcModels::enter_dungeon_reset);
     ClassDB::bind_method(D_METHOD("get_status_bytes"), &DcModels::get_status_bytes);
@@ -313,7 +316,7 @@ Node3D *DcModels::assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, cons
                 struct Start { int map, floor; double x, z, yaw; };
                 static const Start kStarts[] = {
                     {2, 17, 0.0, 150.0, -3.14},     // d03: function 100 (_SET_NPC_POS(-1, 0, 10, 150)); the 'in' frame lies behind a wall that the hero cannot cross
-                    {3, 17, 0.0, 580.0, 0.0},       // d04: the intro (fn_26d04) ends with the hero at z = 580
+                    {3, 17, 0.0, -100.0, 0.0},      // d04: the intro (fn_26d04) ends with the hero at z = -100 (the arrival scene alone ends at z = 380; the live game agrees)
                     {5, 24, 0.0, 48.32, 3.06},      // d06 stage 1: function 199 (the floor's own start frame is the arena's centre, where the boss's shock wave lands)
                     {6, 99, 8.17, 148.41, -2.90},   // d07: the intro (function 199) ends close to the boss
                 };
@@ -322,6 +325,7 @@ Node3D *DcModels::assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, cons
             }
             walker->set_boss_handler([this](int m, int f) { boss_cleared(m, f); });
         }
+        walker->set_coop_players(coop_players_);
         walker->set_monsters(unit, *tables_, map_no, monster_rand_state, dccore::parse_collision_mds(disc_->read("dun/etc/atrcol.mds")), events, floor, layout.map1_variant);
         if (events) walker->set_events(*events, dccore::floor_markers(*dungeon, layout), event_tables_, map_no, floor, gate_key);
         if (back_next_.present) {   // the back floor of this random floor (built right after the main one, see start_floor)
@@ -1368,8 +1372,17 @@ void DcModels::set_coop_floor(int64_t seed, const PackedByteArray &host_status) 
     }
 }
 
+Dictionary DcModels::pad_state() const {
+    const dc_pad::State p = dc_pad::read();
+    Dictionary d;
+    d["bits"] = int(p.bits);
+    d["lx"] = p.lx; d["ly"] = p.ly; d["rx"] = p.rx; d["ry"] = p.ry;
+    return d;
+}
+
 void DcModels::clear_coop_floor() {
     coop_seed_ = -1;
+    coop_players_ = 1;
     coop_host_status_.reset();
 }
 

@@ -1,5 +1,5 @@
 """Compare the C++ floor generator (dcdungeon.exe) with the dungeon that is live in PCSX2.
-usage: dungeon_live.py [map_addr]   (default MainDungeonMap 0x01DC4BE0)"""
+usage: dungeon_live.py [map_addr]   (default MainDungeonMap 0x01DC4BE0; UraDungeonMap 0x01DD56F0 = the back floor: built after the main floor without clearing the map, `dcdungeon --old`)"""
 import struct, subprocess, sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'coop'))
 from pine import Pine

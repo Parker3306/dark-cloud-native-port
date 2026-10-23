@@ -214,6 +214,7 @@ public:
     void set_bgm_number(int n) { bgm_request_ = n; }
     double get_clock() const;            // game time 0..12
     void run_event(int id) { pending_event_ = id; }
+    bool run_record(int record, int arg) { return start_event(-100 - (record | (arg << 24))); }   // tests: an internal function of the town's script by its record offset (see ScriptVm::run)
     // ---- Georama: the edit mode and the Atla board
     Dictionary take_modal_request() { Dictionary d = modal_request_; modal_request_ = Dictionary(); return d; }
     void modal_done(int value) { if (rt_) rt_->modal_done(value); }

@@ -13,10 +13,18 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	models.new_game(1)
+	for gf in _arg("--game-flag", "").split(";", false):   # --game-flag 20,1;21,1 : game flag, value
+		var gv := gf.split(",")
+		models.cheat_set_game_flag(int(gv[0]), int(gv[1]) != 0 if gv.size() > 1 else true)
+	for gi in _arg("--game-int", "").split(";", false):   # --game-int 0,300 : game int flag, value
+		var gw := gi.split(",")
+		models.cheat_set_game_int(int(gw[0]), int(gw[1]))
 	ModalUi.auto_choose = _arg("--auto-modal", "") != ""
 	var options := {"complete": _arg("--complete", "1") == "1", "event": int(_arg("--event", "-1")), "old_map": int(_arg("--old-map", "0")), "variant": int(_arg("--variant", "0"))}
 	if _arg("--script", "") != "":
 		options["script"] = DungeonRun.parse_script(_arg("--script"))
+	if _arg("--pad-file", "") != "":   # portkit replay: the recorded input of a human
+		options["script"] = preload("res://pad_file.gd").load_ticks(_arg("--pad-file"))
 	if _arg("--teleport", "") != "":
 		var t := _arg("--teleport").split(",")
 		options["teleport"] = [float(t[0]), float(t[1]), float(t[2])]
@@ -58,6 +66,15 @@ func _ready() -> void:
 	if not run.start(models, _arg("--town", "e01"), options):
 		get_tree().quit(1)
 		return
+	if _arg("--fish-auto", "") != "":
+		run.walk.set_fish_auto(true)
+	if _arg("--run-record", "") != "":   # --run-record 0x91bc:0 : an internal function of the town's script by its record offset with one argument (the pond set-ups of the fishing towns)
+		var rr := _arg("--run-record").split(":")
+		var rec := rr[0].hex_to_int() if rr[0].begins_with("0x") else int(rr[0])
+		run.walk.run_record(rec, int(rr[1] if rr.size() > 1 else "0"))
+	if _arg("--live-shots", "") != "" and _arg("--cam", "") != "":   # (a free camera for the live screenshots too)
+		var lc := _arg("--cam").split(",")
+		run.walk.set_free_camera(Vector3(float(lc[0]), float(lc[1]), float(lc[2])), Vector3(float(lc[3]), float(lc[4]), float(lc[5])))
 	if _arg("--live-shots", "") != "":   # real time (the network needs frames): screenshots after N seconds, the scripted pad plays on the physics ticks
 		run.walk.set_physics_process(true)
 		var started := Time.get_ticks_msec()
@@ -80,8 +97,6 @@ func _ready() -> void:
 		return
 	if _arg("--manual", "1") == "1":   # only the ticks asked for (the physics frames that pass while a screenshot is taken must not run the game on)
 		run.walk.set_physics_process(false)
-	if _arg("--fish-auto", "") != "":
-		run.walk.set_fish_auto(true)
 	if _arg("--eb-auto", "") != "":   # the EB duel of a story scene played perfectly (every key pressed that many ticks after its line)
 		run.walk.debug_eb_autoplay(int(_arg("--eb-auto")))
 	if _arg("--shop", "") != "":
@@ -137,7 +152,7 @@ func _ready() -> void:
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("%s_t%d.png" % [prefix, target])
-		print("SHOT ", target, " mode ", run.walk.get_mode(), " player ", run.walk.get_player_position(), " near ", run.walk.get_near_event(), " ui ", run.walk.get_ui())
+		print("SHOT ", target, " pose ", run.walk.get_hero_pose(), " mode ", run.walk.get_mode(), " player ", run.walk.get_player_position(), " near ", run.walk.get_near_event(), " ui ", run.walk.get_ui())
 		var ebs: Dictionary = run.walk.get_eb_ui()
 		if not ebs.is_empty():
 			print("  EB active ", ebs.get("active"), " count ", ebs.get("count"), " hit ", ebs.get("key_count"), "/", ebs.get("keys", []).size(), " result ", ebs.get("result"), " finish ", ebs.get("finish"), " intro ", ebs.get("intro"))

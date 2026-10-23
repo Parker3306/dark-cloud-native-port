@@ -6,8 +6,9 @@ OUT="$1"; mkdir -p "$OUT"
 for spec in "toan 0 800,430,1150,850" "xiao 1 800,430,1150,850" "ruby 3 800,420,1150,850" "ungaga 4 780,250,1170,850"; do
   set -- $spec; NAME=$1; CH=$2; CROP=$3
   # a fresh emulator per character: loading a state again after the hook ran once made the recompiler abort ("Impossible block clearing failure")
-  powershell -NoProfile -Command "Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Stop-Process -Force"; sleep 3
-  PID=$(powershell -NoProfile -ExecutionPolicy Bypass -File tools/dc/launch_pcsx2.ps1 | tr -d '')
+  powershell -NoProfile -Command "Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Where-Object { \$_.Path -like '*\DarkCloud\tools\*' } | Stop-Process -Force"; sleep 3
+  PID=$(powershell -NoProfile -ExecutionPolicy Bypass -File tools/dc/launch_pcsx2.ps1 | tr -d '
+')
   python -I - <<'PY'
 import sys, time
 sys.path.insert(0, "coop")

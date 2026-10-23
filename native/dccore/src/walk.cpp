@@ -655,6 +655,7 @@ void Walker::tick(const PadRaw& pad) {
         }
         if (0 < combat.busy) --combat.busy;
         if (lock) {   // NO: lock on / off; the shoulder button picks the next monster
+            if (no_down && std::getenv("DC_LOCKDBG")) std::fprintf(stderr, "NO pressed: lock target %d flag %d cursor %.1f yaw %.2f\n", lock->target, lock->flag, double(lock->cursor_cnt), double(player.yaw));
             if (no_down) {
                 if (lock->target == -1) camera.angle = float(double(player.yaw) - kPiD);
                 else lock->flag = lock->flag == 0 ? 1 : 0;

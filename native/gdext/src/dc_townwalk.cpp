@@ -1,4 +1,5 @@
 #include "dc_townwalk.h"
+#include "dc_pad.h"
 #include "dc_eb_ui.h"
 
 #include <algorithm>
@@ -258,6 +259,7 @@ void DcTownWalk::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_bgm_number", "n"), &DcTownWalk::set_bgm_number);
     ClassDB::bind_method(D_METHOD("get_clock"), &DcTownWalk::get_clock);
     ClassDB::bind_method(D_METHOD("run_event", "id"), &DcTownWalk::run_event);
+    ClassDB::bind_method(D_METHOD("run_record", "record", "arg"), &DcTownWalk::run_record);
     ClassDB::bind_method(D_METHOD("place_hero", "x", "y", "z", "yaw"), &DcTownWalk::place_hero);
     ClassDB::bind_method(D_METHOD("get_door_out", "event_index"), &DcTownWalk::get_door_out);
     ClassDB::bind_method(D_METHOD("take_modal_request"), &DcTownWalk::take_modal_request);
@@ -321,6 +323,7 @@ void DcTownWalk::setup(DcTown *scene, DcCharacter *player, const TownEnv &env, i
     player_ = player;
     env_ = env;
     walker_ = std::make_unique<dccore::Walker>(nullptr, nullptr);
+    walker_->params.mask = 0;   // EdMoveChara calls MoveCheck with mask 0 (t2 = $zero at 0x16a9b4): the polygons of placed parts and static objects are type 1, a dungeon player (mask 1) would walk through them
     const std::shared_ptr<dccore::Town> town = town_;
     walker_->poly_source = [town](float x, float y, float z) { return dccore::town_polys_near(*town, x, y, z); };
     walker_->camera_source = [town](float x, float y, float z) { return dccore::town_camera_polys(*town, x, y, z); };
@@ -550,36 +553,42 @@ dccore::PadRaw DcTownWalk::read_devices(uint32_t &menu_bits) const {
     menu_bits = 0;
     Input *in = Input::get_singleton();
     auto to_raw = [](float v) { return uint8_t(std::clamp(int(std::lround(128.0 + v * 127.0)), 0, 255)); };
-    float lx = float(in->get_joy_axis(0, JOY_AXIS_LEFT_X)), ly = float(in->get_joy_axis(0, JOY_AXIS_LEFT_Y));
+    const dc_pad::State joy = dc_pad::read();   // the DualShock: the PS2 pad word as the game reads it (dc_pad.h), the same buttons as in PCSX2
+    float lx = joy.lx, ly = joy.ly;
     const bool editing = mode_ == ModeEdit;
     auto key = [in](Key k) { return in->is_physical_key_pressed(k); };
     if (key(KEY_A) || (!editing && key(KEY_LEFT))) lx -= 1.0f;
     if (key(KEY_D) || (!editing && key(KEY_RIGHT))) lx += 1.0f;
     if (key(KEY_W) || (!editing && key(KEY_UP))) ly -= 1.0f;
     if (key(KEY_S) || (!editing && key(KEY_DOWN))) ly += 1.0f;
+    pad.rx = to_raw(std::clamp(joy.rx, -1.0f, 1.0f));
+    pad.ry = to_raw(std::clamp(joy.ry, -1.0f, 1.0f));
     if (editing) {   // the arrow keys are the D-pad: one cell at a time
-        if (key(KEY_UP) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_UP)) menu_bits |= 0x1000;
-        if (key(KEY_DOWN) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_DOWN)) menu_bits |= 0x4000;
-        if (key(KEY_LEFT) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_LEFT)) menu_bits |= 0x8000;
-        if (key(KEY_RIGHT) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_RIGHT)) menu_bits |= 0x2000;
-        pad.rx = to_raw(std::clamp(float(in->get_joy_axis(0, JOY_AXIS_RIGHT_X)), -1.0f, 1.0f));
-        if (key(KEY_G) || in->is_joy_button_pressed(0, JOY_BUTTON_X)) pad.buttons |= dccore::kPadUse;
-        if (key(KEY_Z) || in->get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT) > 0.5) pad.buttons |= 1;
-        if (key(KEY_C) || in->get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT) > 0.5) pad.buttons |= 2;
+        if (key(KEY_UP) || (joy.bits & 0x1000)) menu_bits |= 0x1000;
+        if (key(KEY_DOWN) || (joy.bits & 0x4000)) menu_bits |= 0x4000;
+        if (key(KEY_LEFT) || (joy.bits & 0x8000)) menu_bits |= 0x8000;
+        if (key(KEY_RIGHT) || (joy.bits & 0x2000)) menu_bits |= 0x2000;
+        if (key(KEY_G) || (joy.bits & 0x80)) pad.buttons |= dccore::kPadUse;
+        if (key(KEY_Z) || (joy.bits & 0x01)) pad.buttons |= 1;
+        if (key(KEY_C) || (joy.bits & 0x02)) pad.buttons |= 2;
     } else {
-        if (key(KEY_W) || key(KEY_UP) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_UP)) menu_bits |= 0x1000;
-        if (key(KEY_S) || key(KEY_DOWN) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_DOWN)) menu_bits |= 0x4000;
+        if (key(KEY_W) || key(KEY_UP) || (joy.bits & 0x1000)) menu_bits |= 0x1000;
+        if (key(KEY_S) || key(KEY_DOWN) || (joy.bits & 0x4000)) menu_bits |= 0x4000;
+        if (joy.bits & 0x8000) menu_bits |= 0x8000;
+        if (joy.bits & 0x2000) menu_bits |= 0x2000;
+        pad.buttons |= joy.bits & 0x0F;   // L2 / R2 / L1 / R1 as the game gets them
     }
-    if (key(KEY_T) || in->is_joy_button_pressed(0, JOY_BUTTON_Y)) menu_bits |= 0x10;
-    if (!editing && (key(KEY_Z) || in->is_joy_button_pressed(0, JOY_BUTTON_X))) menu_bits |= 0x80;   // square (the EB duel)
-    if (key(KEY_B) || in->is_joy_button_pressed(0, JOY_BUTTON_BACK)) menu_bits |= 0x100;
+    if (key(KEY_T) || (joy.bits & 0x10)) menu_bits |= 0x10;
+    if (!editing && (key(KEY_Z) || (joy.bits & 0x80))) menu_bits |= 0x80;   // square (the EB duel)
+    if (key(KEY_B) || (joy.bits & 0x100)) menu_bits |= 0x100;
+    if (joy.bits & 0x800) menu_bits |= 0x800;   // start
     pad.lx = to_raw(std::clamp(lx, -1.0f, 1.0f));
     pad.ly = to_raw(std::clamp(ly, -1.0f, 1.0f));
-    if (in->is_physical_key_pressed(KEY_Q) || in->is_joy_button_pressed(0, JOY_BUTTON_LEFT_SHOULDER)) pad.buttons |= dccore::kPadCamLeft;
-    if (in->is_physical_key_pressed(KEY_E) || in->is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)) pad.buttons |= dccore::kPadCamRight;
-    if (!editing && (in->is_physical_key_pressed(KEY_R) || in->is_joy_button_pressed(0, JOY_BUTTON_LEFT_STICK))) pad.buttons |= dccore::kPadBehind;
-    if (in->is_physical_key_pressed(KEY_SPACE) || in->is_physical_key_pressed(KEY_ENTER) || in->is_physical_key_pressed(KEY_F) || in->is_joy_button_pressed(0, JOY_BUTTON_A)) pad.buttons |= dccore::kPadOK;
-    if (in->is_physical_key_pressed(KEY_X) || in->is_physical_key_pressed(KEY_ESCAPE) || in->is_joy_button_pressed(0, JOY_BUTTON_B)) pad.buttons |= dccore::kPadNO;
+    if (in->is_physical_key_pressed(KEY_Q)) pad.buttons |= dccore::kPadCamLeft;
+    if (in->is_physical_key_pressed(KEY_E)) pad.buttons |= dccore::kPadCamRight;
+    if (!editing && in->is_physical_key_pressed(KEY_R)) pad.buttons |= dccore::kPadBehind;
+    if (in->is_physical_key_pressed(KEY_SPACE) || in->is_physical_key_pressed(KEY_ENTER) || in->is_physical_key_pressed(KEY_F) || (joy.bits & 0x40)) pad.buttons |= dccore::kPadOK;
+    if (in->is_physical_key_pressed(KEY_X) || in->is_physical_key_pressed(KEY_ESCAPE) || (joy.bits & 0x20)) pad.buttons |= dccore::kPadNO;
     return pad;
 }
 
@@ -876,7 +885,7 @@ void DcTownWalk::step_one() {
     dccore::PadRaw pad;
     uint32_t menu_bits = 0;
     if (size_t(tick_count_) < script_.size()) { pad = script_[size_t(tick_count_)]; menu_bits = script_bits_[size_t(tick_count_)]; }
-    else if (use_devices_) pad = read_devices(menu_bits);
+    else if (use_devices_) { pad = read_devices(menu_bits); dc_pad::record(pad.lx, pad.ly, pad.rx, pad.ry, pad.buttons, menu_bits); }   // (portkit replay: PK_RECORD_PAD)
     const bool ok_now = (pad.buttons & dccore::kPadOK) != 0, ok_down = ok_now && !prev_ok_;
     prev_ok_ = ok_now;
     last_ok_down_ = ok_down;
@@ -1171,6 +1180,17 @@ void DcTownWalk::apply_handles() {
     if (!rt_ || !scene_) return;
     for (int h = 0; h < 32; ++h) {
         const dccore::EvHandle &hd = rt_->handles[size_t(h)];
+        if (hd.kind == 4) {   // a frame of an actor's model (a propeller, a tail): on top of the motion
+            auto an = actor_nodes_.find(hd.index);
+            if (an == actor_nodes_.end() || !an->second || !hd.moved) continue;
+            HandleApplied &ap = handle_applied_[h];
+            if (ap.moved && hd.pos.x == ap.pos.x && hd.pos.y == ap.pos.y && hd.pos.z == ap.pos.z && hd.rot.x == ap.rot.x && hd.rot.y == ap.rot.y && hd.rot.z == ap.rot.z) continue;
+            an->second->set_joint_override(an->second->find_joint(String(hd.frame.c_str())), Vector3(hd.rot.x, hd.rot.y, hd.rot.z), Vector3(hd.pos.x, hd.pos.y, hd.pos.z), hd.rot_set, hd.pos_set);
+            ap.moved = true;
+            ap.pos = hd.pos;
+            ap.rot = hd.rot;
+            continue;
+        }
         if (hd.kind != 1 && hd.kind != 2 && hd.kind != 3) continue;
         const std::vector<int> &list = hd.kind == 1 ? fixed_instances_ : placed_instances_;
         int inst = -1;
@@ -1308,5 +1328,13 @@ Dictionary DcTownWalk::get_hero_pose() const {
     d["time"] = node->get_time();
     d["mode"] = int(mode_);
     d["visible"] = node->is_visible();
+    if (mode_ == ModeFish && fish_sim_) {   // what the others need to draw his line: the float, the rod tip, whether the line is out (co-op puppets)
+        Dictionary f;
+        f["float"] = fish_float_;
+        f["tip"] = fish_rod_tip();
+        f["out"] = fish_line_out_ || fish_state_ == 10 || fish_state_ == 11 || fish_state_ == 5 || fish_state_ == 9;
+        f["slack"] = fish_line_out_ ? 1.0f : 0.3f;
+        d["fish"] = f;
+    }
     return d;
 }

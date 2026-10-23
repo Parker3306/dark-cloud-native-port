@@ -17,7 +17,7 @@ signal upnp_done(external_address: String)   # try_upnp finished ("" = no router
 signal session_closed      # the connection is gone (the host left, or stop() was called)
 
 const MAX_PLAYERS := 4
-const DEFAULT_PORT := 27015
+const DEFAULT_PORT := 8211
 
 var active := false
 var is_host := false

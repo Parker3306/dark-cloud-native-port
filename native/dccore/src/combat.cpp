@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "dccore/combat.h"
 #include "dccore/gamemath.h"
 #include "dccore/monster_ai.h"
@@ -14,6 +15,7 @@ int ColPool::set(float radius, float scale_flag, const float pos[3], int damage,
         c.used = true;
         c.pos[0] = pos[0]; c.pos[1] = pos[1]; c.pos[2] = pos[2]; c.pos[3] = 1.0f;
         c.damage = damage;
+        if ((target & 1) != 0 && monster_damage_mult != 1.0f && damage > 0) c.damage = std::max(1, int(float(damage) * monster_damage_mult + 0.5f));
         c.scale_flag = scale_flag;
         c.radius = radius;
         c.life = life;

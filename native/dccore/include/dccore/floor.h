@@ -44,6 +44,15 @@ struct PartDef {            // one DEF_PATS block; its index in DungeonCfg::part
     std::vector<PartRef> collisions, cameras;
     std::vector<std::array<float, 3>> fires;  // torch positions (model space)
     std::vector<PartMarker> markers;
+    // Where the part stands: the PT_BASE offset of its (first) model, which the cfg gives in tens of units (the fixed maps place parts by it: d01boss's walkway d01g05 at z = -64 -> -640,
+    // the d02boss cells at multiples of 16 -> 160 = one cell). The collision, camera and marker frames of the part move with it.
+    // The quarter turns of the part in a fixed map: the rotation field of its PT_BASE line (`d01o01_0.mds, 0, 0,0,32, 2`): the model, the collision (PT_COLS rot 0), the camera, the markers and
+    // the frames all turn with it.
+    int turn() const { return models.empty() ? 0 : models[0].rot; }
+    std::array<float, 3> origin() const {
+        if (models.empty()) return {0.0f, 0.0f, 0.0f};
+        return {models[0].offset[0] * 10.0f, models[0].offset[1] * 10.0f, models[0].offset[2] * 10.0f};
+    }
 };
 
 struct CfgLight {
@@ -66,6 +75,7 @@ struct DungeonCfg {
     float view_level = 0;
     std::string ground_img;     // GRD_IMG: texture container of the floor pieces
     std::vector<std::string> drans_parts, drans_cols;   // DRANS_PARTS / DRANS_COLS (d01boss): the 12 tiles of Dran's arena floor (models with a crumbling motion and their collision)
+    std::vector<std::string> dummy_models;   // DUMMY_MODEL (d05): the three scenery blocks buildDummyModel places (1 / 2 / 3 cells)
     std::string minimap_img;    // MINIMAP_IMG: the mini map tiles (16 x 16, 8 per row); a part's first tile is its PT_BASE slot value
     std::vector<PartDef> parts;
 };
@@ -92,11 +102,14 @@ struct Dungeon {
     std::map<std::string, CollisionPiece> cam_meshes; // PT_CAM meshes (`*_v.mds`, camera collision) by file name
     // Positions (model space) of the objects a PT_MARKER names, by model file and object name.
     std::map<std::string, std::map<std::string, std::array<float, 3>>> marker_frames;
+    std::map<std::string, std::map<std::string, float>> marker_frame_yaw;   // the same objects' own turn (see CollisionPiece::frame_yaw)
 };
 
 // World-space collision polygons of the (2 * radius + 1)^2 cells around world position (x, z), in the game's order (row by row), each piece placed with
 // the cell's rotation plus the PT_COLS rotation. Radius 1 is what the game gathers around the player.
 // Cells whose locked door was opened (FloorLayout::door_open) leave out the polygons of their sliding doors.
+// CDranMapField::Step for the twelve arena tiles of a layout (does nothing on any other floor).
+void dran_field_step(const FloorLayout& layout);
 std::vector<CCPoly> floor_polys_near(const Dungeon& d, const FloorLayout& layout, float x, float z, int radius = 1);
 
 // Camera collision polygons: the `_v` pieces of every cell whose centre is within 240 units (horizontally) of (x, z) -- the game's draw-distance test.

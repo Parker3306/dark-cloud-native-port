@@ -166,6 +166,15 @@ void DcTownWalk::fish_motion(int motion, bool loop) {
 
 void DcTownWalk::step_fish(const dccore::PadRaw &pad, bool ok_down, uint32_t menu_pressed) {
     if (!fish_sim_) { mode_ = ModeWalk; return; }
+    if (fish_auto_ && fish_state_ == 1 && fish_idle_ > 10 && fish_idle_ <= 20 && rt_) {   // (the test player turns to the middle of the fish before the cast: the float lands 48 ahead)
+        const float cx = (rt_->fishing.area[0] + rt_->fishing.area[2]) * 0.5f - fish_hero_.x, cz = (rt_->fishing.area[1] + rt_->fishing.area[3]) * 0.5f - fish_hero_.z;
+        fish_yaw_ = std::atan2(cx, cz);
+        const float d = std::sqrt(cx * cx + cz * cz);
+        if (d > 40.0f) {   // and walks up to it (the stick moves the rod holder inside the pond's rectangle, state 1)
+            fish_hero_.x += cx / d * (d - 40.0f);
+            fish_hero_.z += cz / d * (d - 40.0f);
+        }
+    }
     if (fish_auto_ && ((fish_state_ == 1 && fish_idle_ > 20 && fish_bait_item_ >= 0) || fish_state_ == 7 || (fish_state_ == 11 && fish_t_ > 80))) ok_down = true;
     const bool circle_down = (menu_pressed & 0x20) != 0 || (pad.buttons & dccore::kPadNO) != 0 && !fish_prev_no_;
     fish_prev_no_ = (pad.buttons & dccore::kPadNO) != 0;

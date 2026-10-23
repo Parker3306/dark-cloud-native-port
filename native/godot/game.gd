@@ -23,6 +23,7 @@ func _arg(name: String, default: String = "") -> String:
 	return a[i + 1] if i >= 0 and i + 1 < a.size() else default
 
 func _ready() -> void:
+	add_child(preload("res://pad_keys.gd").new())   # (the DualShock in the menus)
 	if not models.open_iso(_arg("--iso", DEFAULT_ISO)):
 		push_error("Cannot open the game disc. Start with: -- --iso <path to your Dark Cloud (USA) ISO>")
 		get_tree().quit(1)
@@ -50,6 +51,8 @@ func _ready() -> void:
 			models.set_character(int(_arg("--character")))
 	if _arg("--town", "") != "":
 		models.new_game(1)
+		if _arg("--atla", "") != "":   # tests: every part of that town's Atla (the Georama edit demo needs them)
+			models.grant_atla(int(_arg("--atla")), false)
 		_enter_town(_arg("--town"), int(_arg("--event", "-1")))
 	elif _arg("--village", "") != "":
 		models.new_game(1)
@@ -65,6 +68,7 @@ func _ready() -> void:
 		var started := Time.get_ticks_msec()
 		var shots: PackedStringArray = _arg("--live-shots").split(",", false)
 		var auto_done := _arg("--auto-dungeon", "") == ""
+		var edit_demo_done := _arg("--edit-demo", "") == ""
 		for sp in shots:
 			var parts := sp.split("@")
 			var until := float(parts[0]) * 1000.0
@@ -74,6 +78,23 @@ func _ready() -> void:
 					auto_done = true
 					var df := _arg("--auto-dungeon").split(",")
 					_enter_dungeon(int(df[0]), int(df[1]))
+			if not edit_demo_done and town != null and float(Time.get_ticks_msec() - started) > float(_arg("--edit-demo").split(":")[0]) * 1000.0:   # tests: --edit-demo SECONDS:PART : this player builds that Georama part (enter the edit mode, pick it, place it, leave)
+				edit_demo_done = true
+				var w = town.walk
+				print("EDITDEMO at ", Time.get_ticks_msec() / 1000.0, " layout before ", models.get_town_layout(0).hex_encode().md5_text())
+				w.teleport(0.0, 0.0, 0.0)   # (an open spot of Norune where the part can stand)
+				await get_tree().create_timer(0.3).timeout
+				w.edit_toggle()
+				await get_tree().create_timer(0.5).timeout
+				print("EDITDEMO select at ", Time.get_ticks_msec() / 1000.0, " ", w.georama_select_part(int(_arg("--edit-demo").split(":")[1])), " ", w.get_edit_ui().get("active", false))
+				await get_tree().create_timer(0.3).timeout
+				var tn: int = w.get_tick_count()   # the pad script is indexed by the town's tick: neutral until now, then Cross (place the part under the cursor)
+				w.set_script_ticks(DungeonRun.parse_script("none:%d,cross:3,none:10" % (tn + 10)))
+				await get_tree().create_timer(2.0).timeout
+				print("EDITDEMO placed at ", Time.get_ticks_msec() / 1000.0, " ", w.get_edit_ui())
+				town.edit_finished.emit()   # (the house stands and is saved in the layout; leaving the edit mode needs the cursor off it, here the notice is sent at once)
+				await get_tree().create_timer(2.0).timeout
+				print("EDITDEMO left, editing ", w.get_edit_ui().get("active", false), " layout ", models.get_town_layout(0).hex_encode().md5_text())
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(parts[1])
 			var cn2 := CoopNet.find(get_tree())
@@ -399,7 +420,7 @@ func _enter_dungeon(dungeon: int, floor_index: int) -> void:
 	var net := CoopNet.find(get_tree())
 	if net != null and net.active and run == null:
 		if net.is_host:
-			var data := {"dungeon": dungeon, "floor": floor_index, "seed": models.draw_coop_seed(), "status": models.get_status_bytes()}
+			var data := {"dungeon": dungeon, "floor": floor_index, "seed": models.draw_coop_seed(), "status": models.get_status_bytes(), "players": net.player_count()}
 			net.send_event("enter_dungeon", data)
 			_start_dungeon(dungeon, floor_index, data)
 		else:
@@ -421,6 +442,7 @@ func _coop_fetch_town(net: CoopNet, town_index: int) -> void:
 		await get_tree().create_timer(0.05).timeout
 		waited += 0.05
 	if _town_layouts.has(town_index):
+		print("COOP host layout ", _town_layouts[town_index].hex_encode().md5_text())
 		models.set_town_layout_override(town_index, _town_layouts[town_index])
 
 func _on_coop_event(_from: int, kind: String, data: Dictionary) -> void:
@@ -435,6 +457,7 @@ func _on_coop_event(_from: int, kind: String, data: Dictionary) -> void:
 			_town_layouts[int(data["town"])] = data["bytes"]
 		"town_edited":   # (guest) the host rebuilt something in the town we are in
 			if net != null and not net.is_host and town != null and run == null and town_name == String(data["town"]):
+				print("COOP town rebuilt after the host's edit")
 				_enter_town(town_name, -2)
 		"enter_request":   # (host)
 			if net != null and net.is_host and run == null:
@@ -458,6 +481,7 @@ func _start_dungeon(dungeon: int, floor_index: int, coop_data: Dictionary) -> vo
 		run_opts["coop_seed"] = coop_data["seed"]
 		run_opts["coop_status"] = coop_data["status"]
 		run_opts["coop_back"] = bool(coop_data.get("back", false))
+		run_opts["coop_players"] = int(coop_data.get("players", 1))
 	if not run.start(models, dungeon, floor_index, "dun/mainchara/c01d.chr", run_opts):
 		run.queue_free()
 		run = null

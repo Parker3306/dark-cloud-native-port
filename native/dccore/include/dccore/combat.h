@@ -59,6 +59,7 @@ public:
     std::array<ColEntry, kSize> e;
     int last = 0;                     // +0x3d80: index of the entry Set() filled last
     uint32_t serial_counter = 0;      // co-op: the serial of the next sphere
+    float monster_damage_mult = 1.0f; // co-op balance (coop_scale.h): spheres that can hurt the player (target bit 1) are made with this much more damage
     // co-op: a sphere as floats (and back); inject puts a sphere that came over the wire into a free entry (-1 when the pool is full)
     static void pack(const ColEntry& c, float out[kColPackFloats]);
     static void unpack(const float in[kColPackFloats], ColEntry& c);

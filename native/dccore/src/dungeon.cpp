@@ -1,4 +1,7 @@
+#include <cstdio>
+#include <cstdlib>
 #include "dccore/dungeon.h"
+#include "dccore/monster_ai.h"
 #include "dccore/gamemath.h"
 #include "dccore/placement.h"
 #include <cmath>
@@ -601,6 +604,55 @@ void build_chara_special_parts(FloorLayout& fl, GameRand& rng, const GenState& s
     }
 }
 
+// CDungeonMap::buildDummyModel (0x001c9020), only for selectMapNo == 4 (d05): up to 8 scenery blocks on empty ground, 3 rand() per try, at most 10001 tries.
+void build_dummy_model(FloorLayout& fl, GameRand& rng) {
+    fl.dummy_pos.clear();
+    fl.dummy_kind.clear();
+    int placed = 0, tries = 0;
+    // (the game indexes the raw array x + y * 20, so x = -1 reads the last cell of the row above and x = 20, 21 the first cells of the next row; outside the array it reads other
+    // fields of the map object, taken as 'not empty')
+    auto cell_part = [&](int x, int y) { const int i = x + y * kGrid; return (i < 0 || i >= kGrid * kGrid) ? 0 : fl.cell[size_t(i)].part; };
+    while (placed <= 7) {
+        const int x = ftoi(fdiv(fmul(itof(rng.next()), 21.0f), kRandRange)) - 1;
+        const int y = ftoi(fdiv(fmul(itof(rng.next()), 21.0f), kRandRange)) - 1;
+        const int k = ftoi(fdiv(fmul(itof(rng.next()), 3.0f), kRandRange));
+        int kind = -1;
+        float pos[3] = {0, 0, 0};
+        const int span = k == 2 ? 3 : 2;
+        const float shift = k == 2 ? 240.0f : (k == 1 ? 160.0f : 80.0f);
+        if (k >= 0 && k <= 2) {
+            kind = k;
+            for (int dy = 0; dy < span; ++dy)
+                for (int dx = 0; dx < span; ++dx)
+                    if (cell_part(x + dx, y + dy) != -1) kind = -1;
+            if (kind != -1) {
+                pos[0] = gm::fadd(fmul(itof(x), 160.0f), shift);
+                pos[1] = 0.0f;
+                pos[2] = gm::fadd(fmul(itof(y), 160.0f), shift);
+            }
+        }
+        if (kind != -1) {
+            for (int i = 0; i < placed && i < int(fl.dummy_pos.size()); ++i)
+                if (vu_dist(pos, fl.dummy_pos[size_t(i)].data()) < fmul(itof(kind), 40.0f)) { kind = -1; break; }
+            for (int cy = 0; cy < kGrid && kind != -1; ++cy)
+                for (int cx = 0; cx < kGrid; ++cx)
+                    if (fl.at(cx, cy).part == 0x28) {
+                        const float entrance[3] = {gm::fadd(fmul(itof(cx), 160.0f), 80.0f), 0.0f, gm::fadd(fmul(itof(cy), 160.0f), 80.0f)};
+                        if (vu_dist(entrance, pos) < fmul(itof(kind + 2), 160.0f)) { kind = -1; break; }
+                    }
+            if (kind != -1) {
+                if (fl.dummy_pos.size() < 8) {
+                    fl.dummy_pos.push_back({pos[0], pos[1], pos[2]});
+                    fl.dummy_kind.push_back(kind);
+                }
+                ++placed;
+            }
+        }
+        if (10000 < tries) return;
+        ++tries;
+    }
+}
+
 }  // namespace
 
 FloorLayout build_random_map(uint32_t seed, int rooms, int map_no, bool fresh, GenState* state) {
@@ -611,6 +663,7 @@ FloorLayout build_random_map(uint32_t seed, int rooms, int map_no, bool fresh, G
     Generator g(fl, state ? *state : local);
     g.rng.seed(seed);
     g.run(rooms, fresh);
+    if (map_no == 4) build_dummy_model(fl, g.rng);
     {
         const int roll = ftoi(fdiv(fmul(itof(g.rng.next()), 100.0f), kRandRange));
         if (roll < 0x33 && fresh) g.room_link_info();

@@ -59,6 +59,32 @@ EventTables EventTables::load(const Elf& elf) {
     return t;
 }
 
+namespace {
+struct StackRate { int id; int16_t rate; };
+// Recorded with tools/dc/probe_preset.py (see events.h). (19424, 476) = 0x01DC4BE0 = MainDungeonMap, (22256, 477) = 0x01DD56F0 = UraDungeonMap, (-1932, 511) = a stack address.
+constexpr StackRate kStackRatesMain[] = {
+    {193, 1}, {200, 16256}, {201, 19424}, {202, 476}, {203, -1280}, {204, 36}, {205, -708}, {206, 36}, {207, -16540}, {208, 41}, {209, 20}, {213, 26968}, {214, 41}, {217, -16520},
+    {218, 28}, {229, -1932}, {230, 511}, {231, -1928}, {232, 511}, {239, 6}, {241, -708}, {242, 36}, {249, -16560}, {250, 41}, {257, -1528}, {269, -1}, {270, -1}, {271, -1},
+    {272, -1}, {273, 1}, {277, -1}, {278, -1}, {279, -1}, {280, -1}, {281, 19424}, {282, 476}, {285, -1}, {286, -1}, {287, -1}, {288, -1}, {293, -1}, {294, -1}, {295, -1},
+    {296, -1}, {301, -1}, {302, -1}, {303, -1}, {304, -1}, {305, 6}, {309, -1}, {310, -1}, {311, -1}, {312, -1}, {325, -1}, {326, -1}, {327, -1}, {328, -1}, {333, -1},
+    {334, -1}, {335, -1}, {336, -1}, {337, 1}, {361, 1}, {369, 2}, {377, 19424}, {378, 476}, {393, -31128}, {394, 28}};
+constexpr StackRate kStackRatesBack[] = {
+    {203, -1280}, {204, 36}, {205, -708}, {206, 36}, {207, -16540}, {208, 41}, {209, 20}, {213, 26968}, {214, 41}, {229, -1932}, {230, 511}, {231, -1928}, {232, 511},
+    {241, -708}, {242, 36}, {249, -16560}, {250, 41}, {257, -1528}, {281, 22256}, {282, 477}, {305, 6}, {369, 2}, {377, 22256}, {378, 477}, {385, 1}, {389, 2570},
+    {390, 2570}, {391, 2570}, {392, 2570}, {393, -31128}, {394, 28}};
+}  // namespace
+
+int EventTables::stack_rate(int id, bool back) const {
+    if (back) {
+        for (const StackRate& r : kStackRatesBack)
+            if (r.id == id) return r.rate;
+    } else {
+        for (const StackRate& r : kStackRatesMain)
+            if (r.id == id) return r.rate;
+    }
+    return 0;
+}
+
 int EventTables::rate(int map, int id) const {
     if (id < 1 || id > 190 || map < 0 || map > 6) return 0;
     int16_t v;
@@ -91,7 +117,7 @@ int EventTables::preset_item(int map, int floor, int table, bool small, GameRand
         const int32_t r2 = rng.next();
         const int16_t roll = int16_t(gm::ftoi(gm::fdiv(gm::fmul(gm::itof(r2), 100.0f), gm::kRandRange)));
         const int id = pool[size_t(idx)];
-        if (rate(map, id) < roll) return id;
+        if ((id > 190 ? stack_rate(id, table != 0) : rate(map, id)) < roll) return id;
     }
     return -1;
 }

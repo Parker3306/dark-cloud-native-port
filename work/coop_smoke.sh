@@ -50,4 +50,7 @@ grep -q "LIVE 14 floor 2" work/cs_exit_host.log && grep -q "LIVE 10 floor 2" wor
 T="none:60,use:2,none:150"; for i in $(seq 1 30); do T="$T,attack:2,none:60"; done
 pair back play.tscn "--dungeon 0 --floor 1 --coop host --give 224 --to-marker 200 --script $T --live-shots 13,28 --out $W/cs_back_host" "--coop join:127.0.0.1 --live-shots 22 --out $W/cs_back_guest"
 grep -q "LIVE 22 .* back true" work/cs_back_guest.log && ok "back floor together" || bad "back floor together"
+# 8. Dran's floor: a tile the host's shot breaks is broken on the guest too
+pair dran play.tscn "--dungeon 0 --floor 14 --coop host --god 1 --script none:1 --event-end 1 --dran-hit-at 6:3 --live-shots 12 --out $W/cs_dran_host" "--coop join:127.0.0.1 --god 1 --script none:1 --event-end 1 --dran-hit-at 999:0 --live-shots 12 --out $W/cs_dran_guest"
+grep -q "LIVE 12 .* dran \[3, 3, 3, 0," work/cs_dran_guest.log && ok "Dran tile sync" || bad "Dran tile sync"
 exit $fail

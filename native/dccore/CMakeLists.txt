@@ -121,6 +121,18 @@ if(WIN32)
   target_link_options(dclibm PRIVATE -static)
 endif()
 
+add_executable(dcback tools/dcback.cpp)
+target_link_libraries(dcback PRIVATE dccore)
+if(WIN32)
+  target_link_options(dcback PRIVATE -static)
+endif()
+
+add_executable(dcpreset tools/dcpreset.cpp)
+target_link_libraries(dcpreset PRIVATE dccore)
+if(WIN32)
+  target_link_options(dcpreset PRIVATE -static)
+endif()
+
 add_executable(dcevents tools/dcevents.cpp)
 target_link_libraries(dcevents PRIVATE dccore)
 if(WIN32)

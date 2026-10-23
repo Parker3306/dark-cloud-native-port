@@ -130,6 +130,8 @@ DungeonCfg parse_dungeon_cfg(View text) {
             cfg.drans_parts.push_back(a[0]);
         } else if (k == "DRANS_COLS" && !a.empty()) {
             cfg.drans_cols.push_back(a[0]);
+        } else if (k == "DUMMY_MODEL" && !a.empty()) {
+            cfg.dummy_models.push_back(a[0]);
         } else if (k == "MINIMAP_IMG" && !a.empty()) {
             cfg.minimap_img = a[0];
         }
@@ -219,6 +221,7 @@ Dungeon load_dungeon(const std::string& cfg_text, const Pack& mpd) {
             const auto world = world_matrices(mds);
             for (size_t i = 0; i < mds.objects.size(); ++i)
                 d.marker_frames[e.name][mds.objects[i].name] = {float(world[i][12]), float(world[i][13]), float(world[i][14])};
+            for (size_t i = 0; i < mds.objects.size(); ++i) d.marker_frame_yaw[e.name][mds.objects[i].name] = float(std::atan2(world[i][8], world[i][10]));
         } catch (const std::exception&) {
             d.failed_models.push_back(e.name);
         }
@@ -244,18 +247,36 @@ Dungeon load_dungeon(const std::string& cfg_text, const Pack& mpd) {
 
 namespace dccore {
 
+void dran_field_step(const FloorLayout& l) {
+    for (size_t i = 0; i < 12; ++i) {
+        if (l.dran_state[i] <= 0) continue;
+        if (l.dran_state[i] == 2) {
+            l.dran_events.push_back(int(i));
+            l.dran_state[i] = 1;
+        }
+        if (l.dran_state[i] == 1) {
+            l.dran_time[i] += 1.0f;   // the tile's own motion (CCharacter::Step), 59 frames
+            if (l.dran_time[i] >= 59.0f) l.dran_state[i] = 0;
+        }
+    }
+}
+
 std::vector<CCPoly> floor_polys_near(const Dungeon& d, const FloorLayout& layout, float x, float z, int radius) {
     std::vector<CCPoly> out;
     if (layout.fixed) {
-        const float origin[3] = {0, 0, 0};
-        for (const PartDef& part : d.cfg.parts)
+        const float zero[3] = {0, 0, 0};
+        for (const PartDef& part : d.cfg.parts) {
+            const std::array<float, 3> o = part.origin();
+            const float origin[3] = {o[0], o[1], o[2]};
             for (const PartRef& c : part.collisions) {
                 auto it = d.collisions.find(c.file);
-                if (it != d.collisions.end()) place_polys(it->second, model_turn_index(0, c.rot), origin, out, 0);
+                if (it != d.collisions.end()) place_polys(it->second, model_turn_index(part.turn(), c.rot), origin, out, 0, &layout.frame_moves);
             }
-        for (const std::string& name : d.cfg.drans_cols) {   // Dran's arena tiles (all intact)
-            auto it = d.collisions.find(name);
-            if (it != d.collisions.end()) place_polys(it->second, model_turn_index(0, 0), origin, out, 0);
+        }
+        for (size_t ti = 0; ti < d.cfg.drans_cols.size() && ti < 12; ++ti) {   // Dran's arena tiles (only those that still stand: AddCollision wants a counter above 1)
+            if (layout.dran_state[ti] <= 1) continue;
+            auto it = d.collisions.find(d.cfg.drans_cols[ti]);
+            if (it != d.collisions.end()) place_polys(it->second, model_turn_index(0, 0), zero, out, 0);
         }
         return out;
     }
@@ -266,7 +287,8 @@ std::vector<CCPoly> floor_polys_near(const Dungeon& d, const FloorLayout& layout
             if (gx < 0 || gx >= kGrid || gy < 0 || gy >= kGrid) continue;
             const MapCell& cell = layout.at(gx, gy);
             if (cell.part < 0 || size_t(cell.part) >= d.cfg.parts.size()) continue;
-            const float pos[3] = {float(gx) * kCellSize, 0.0f, float(gy) * kCellSize};
+            const std::array<float, 3> po = d.cfg.parts[size_t(cell.part)].origin();
+            const float pos[3] = {float(gx) * kCellSize + po[0], po[1], float(gy) * kCellSize + po[2]};
             for (const PartRef& c : d.cfg.parts[size_t(cell.part)].collisions) {
                 auto it = d.collisions.find(c.file);
                 if (it == d.collisions.end()) continue;
@@ -284,12 +306,14 @@ namespace dccore {
 std::vector<CCPoly> floor_camera_polys(const Dungeon& d, const FloorLayout& layout, float x, float z) {
     std::vector<CCPoly> out;
     if (layout.fixed) {
-        const float origin[3] = {0, 0, 0};
-        for (const PartDef& part : d.cfg.parts)
+        for (const PartDef& part : d.cfg.parts) {
+            const std::array<float, 3> o = part.origin();
+            const float origin[3] = {o[0], o[1], o[2]};
             for (const PartRef& c : part.cameras) {
                 auto it = d.cam_meshes.find(c.file);
-                if (it != d.cam_meshes.end()) place_polys(it->second, model_turn_index(0, c.rot), origin, out);
+                if (it != d.cam_meshes.end()) place_polys(it->second, model_turn_index(part.turn(), c.rot), origin, out);
             }
+        }
         return out;
     }
     for (int gy = 0; gy < kGrid; ++gy)
@@ -298,7 +322,8 @@ std::vector<CCPoly> floor_camera_polys(const Dungeon& d, const FloorLayout& layo
             if (cell.part < 0 || size_t(cell.part) >= d.cfg.parts.size()) continue;
             const float cx = float(gx) * kCellSize - x, cz = float(gy) * kCellSize - z;
             if (std::sqrt(cx * cx + cz * cz) > 240.0f) continue;
-            const float pos[3] = {float(gx) * kCellSize, 0.0f, float(gy) * kCellSize};
+            const std::array<float, 3> po = d.cfg.parts[size_t(cell.part)].origin();
+            const float pos[3] = {float(gx) * kCellSize + po[0], po[1], float(gy) * kCellSize + po[2]};
             for (const PartRef& c : d.cfg.parts[size_t(cell.part)].cameras) {
                 auto it = d.cam_meshes.find(c.file);
                 if (it == d.cam_meshes.end()) continue;
@@ -325,8 +350,8 @@ std::vector<FloorMarker> floor_markers(const Dungeon& d, const FloorLayout& layo
             const PartDef& part = d.cfg.parts[size_t(cell.part)];
             for (const PartMarker& m : part.markers) {
                 // the marker is an (empty) object of one of the part's collision meshes or models; its frame sits under that file's own turn
-                auto emit = [&](const std::array<float, 3>& p, int file_rot) {
-                    const int turn = ((model_turn_index(cell.rot, file_rot) % 4) + 4) % 4;
+                auto emit = [&](const std::array<float, 3>& p, int file_rot, bool of_model) {
+                    const int turn = ((model_turn_index(layout.fixed ? (of_model ? 0 : part.turn()) : cell.rot, file_rot) % 4) + 4) % 4;
                     float c = 1, s2 = 0;
                     switch (turn) {
                         case 1: c = 0; s2 = -1; break;
@@ -335,9 +360,10 @@ std::vector<FloorMarker> floor_markers(const Dungeon& d, const FloorLayout& layo
                     }
                     FloorMarker fmk;
                     fmk.cell_x = gx; fmk.cell_y = gy; fmk.marker = m;
-                    fmk.pos[0] = p[0] * c + p[2] * s2 + float(gx) * kCellSize;
-                    fmk.pos[1] = p[1];
-                    fmk.pos[2] = -p[0] * s2 + p[2] * c + float(gy) * kCellSize;
+                    const std::array<float, 3> po = part.origin();
+                    fmk.pos[0] = p[0] * c + p[2] * s2 + float(gx) * kCellSize + po[0];
+                    fmk.pos[1] = p[1] + po[1];
+                    fmk.pos[2] = -p[0] * s2 + p[2] * c + float(gy) * kCellSize + po[2];
                     out.push_back(fmk);
                 };
                 bool found = false;
@@ -345,7 +371,7 @@ std::vector<FloorMarker> floor_markers(const Dungeon& d, const FloorLayout& layo
                     auto it = d.collisions.find(cr.file);
                     if (it == d.collisions.end()) continue;
                     for (const auto& fr : it->second.frames)
-                        if (fr.first == m.name) { emit(fr.second, cr.rot); found = true; break; }
+                        if (fr.first == m.name) { emit(fr.second, cr.rot, false); found = true; break; }
                     if (found) break;
                 }
                 if (found) continue;
@@ -354,7 +380,7 @@ std::vector<FloorMarker> floor_markers(const Dungeon& d, const FloorLayout& layo
                     if (fm == d.marker_frames.end()) continue;
                     auto it = fm->second.find(m.name);
                     if (it == fm->second.end()) continue;
-                    emit(it->second, mr.rot);
+                    emit(it->second, mr.rot, true);
                     break;
                 }
             }
@@ -387,8 +413,9 @@ std::vector<std::array<float, 3>> floor_fires(const Dungeon& d, const FloorLayou
                 case 2: c = -1; s2 = 0; break;
                 case 3: c = 0; s2 = 1; break;
             }
+            const std::array<float, 3> po = part.origin();
             for (const auto& p : part.fires)
-                out.push_back({p[0] * c + p[2] * s2 + float(gx) * kCellSize, p[1], -p[0] * s2 + p[2] * c + float(gy) * kCellSize});
+                out.push_back({p[0] * c + p[2] * s2 + float(gx) * kCellSize + po[0], p[1] + po[1], -p[0] * s2 + p[2] * c + float(gy) * kCellSize + po[2]});
         }
     }
     return out;
@@ -413,7 +440,17 @@ std::array<float, 3> fixed_start(const Dungeon& d) {
             auto fm = d.marker_frames.find(m.file);
             if (fm == d.marker_frames.end()) continue;
             auto it = fm->second.find("in");
-            if (it != fm->second.end()) return {it->second[0] + m.offset[0], it->second[1] + m.offset[1], it->second[2] + m.offset[2]};
+            if (it != fm->second.end()) {
+                const int turn = ((model_turn_index(0, m.rot) % 4) + 4) % 4;
+                float c = 1, s2 = 0;
+                switch (turn) {
+                    case 1: c = 0; s2 = -1; break;
+                    case 2: c = -1; s2 = 0; break;
+                    case 3: c = 0; s2 = 1; break;
+                }
+                const auto& q = it->second;
+                return {q[0] * c + q[2] * s2 + m.offset[0] * 10.0f, q[1] + m.offset[1] * 10.0f, -q[0] * s2 + q[2] * c + m.offset[2] * 10.0f};
+            }
         }
     return {0, 0, 0};
 }
@@ -431,24 +468,25 @@ bool find_floor_frame(const Dungeon& d, const FloorLayout& layout, const std::st
         const MapCell& cell = layout.fixed ? fixed_cell : layout.at(gx, gy);
         if (cell.part < 0 || size_t(cell.part) >= d.cfg.parts.size()) continue;
         const PartDef& part = d.cfg.parts[size_t(cell.part)];
-        auto place = [&](const std::array<float, 3>& p, int file_rot) {
-            const int turn = ((model_turn_index(cell.rot, file_rot) % 4) + 4) % 4;
+        auto place = [&](const std::array<float, 3>& p, int file_rot, bool of_model, float own_yaw) {
+            const int turn = ((model_turn_index(layout.fixed ? (of_model ? 0 : part.turn()) : cell.rot, file_rot) % 4) + 4) % 4;
             float c = 1, s2 = 0;
             switch (turn) {
                 case 1: c = 0; s2 = -1; break;
                 case 2: c = -1; s2 = 0; break;
                 case 3: c = 0; s2 = 1; break;
             }
-            pos[0] = p[0] * c + p[2] * s2 + float(gx) * kCellSize;
-            pos[1] = p[1];
-            pos[2] = -p[0] * s2 + p[2] * c + float(gy) * kCellSize;
-            if (yaw) *yaw = std::atan2(-s2, c);   // where the part's +z points
+            const std::array<float, 3> po = part.origin();
+            pos[0] = p[0] * c + p[2] * s2 + float(gx) * kCellSize + po[0];
+            pos[1] = p[1] + po[1];
+            pos[2] = -p[0] * s2 + p[2] * c + float(gy) * kCellSize + po[2];
+            if (yaw) *yaw = std::atan2(-s2, c) + own_yaw;   // where the part's +z points
         };
         for (const PartRef& cr : part.collisions) {
             auto it = d.collisions.find(cr.file);
             if (it == d.collisions.end()) continue;
-            for (const auto& fr : it->second.frames)
-                if (fr.first == name) { place(fr.second, cr.rot); return true; }
+            for (size_t fi = 0; fi < it->second.frames.size(); ++fi)
+                if (it->second.frames[fi].first == name) { place(it->second.frames[fi].second, cr.rot, false, fi < it->second.frame_yaw.size() ? it->second.frame_yaw[fi] : 0.0f); return true; }
         }
         for (const PartModelRef& mr : part.models) {
             auto fm = d.marker_frames.find(mr.file);
@@ -460,7 +498,13 @@ bool find_floor_frame(const Dungeon& d, const FloorLayout& layout, const std::st
                     if (us != std::string::npos && it->first.compare(0, us, name) == 0) break;
                 }
             }
-            if (it != fm->second.end()) { place(it->second, mr.rot); return true; }
+            if (it != fm->second.end()) {
+                float own = 0.0f;
+                auto ym = d.marker_frame_yaw.find(mr.file);
+                if (ym != d.marker_frame_yaw.end()) { auto yi = ym->second.find(it->first); if (yi != ym->second.end()) own = yi->second; }
+                place(it->second, mr.rot, true, own);
+                return true;
+            }
         }
     }
     return false;

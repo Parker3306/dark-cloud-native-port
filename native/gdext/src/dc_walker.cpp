@@ -1,4 +1,5 @@
 #include "dc_walker.h"
+#include "dc_pad.h"
 #include "dc_eb_ui.h"
 #include "dccore/weapon_ops.h"
 #include <cstdio>
@@ -84,12 +85,15 @@ void DcWalker::_bind_methods() {
     ClassDB::bind_method(D_METHOD("coop_debug"), &DcWalker::coop_debug);
     ClassDB::bind_method(D_METHOD("set_player_color", "index"), &DcWalker::set_player_color);
     ClassDB::bind_method(D_METHOD("is_back_floor"), &DcWalker::is_back_floor);
+    ClassDB::bind_method(D_METHOD("get_coop_players"), &DcWalker::get_coop_players);
     ClassDB::bind_method(D_METHOD("has_back_floor"), &DcWalker::has_back_floor);
     ClassDB::bind_method(D_METHOD("debug_swap_floor"), &DcWalker::debug_swap_floor);
     ClassDB::bind_method(D_METHOD("debug_monster_cols"), &DcWalker::debug_monster_cols);
     ClassDB::bind_method(D_METHOD("debug_player_spheres"), &DcWalker::debug_player_spheres);
     ClassDB::bind_method(D_METHOD("debug_polys_near", "x", "z"), &DcWalker::debug_polys_near);
     ClassDB::bind_method(D_METHOD("debug_event_end"), &DcWalker::debug_event_end);
+    ClassDB::bind_method(D_METHOD("debug_dran_hit", "tile"), &DcWalker::debug_dran_hit);
+    ClassDB::bind_method(D_METHOD("get_dran_state"), &DcWalker::get_dran_state);
     ClassDB::bind_method(D_METHOD("debug_hit_stats"), &DcWalker::debug_hit_stats);
     ClassDB::bind_method(D_METHOD("set_hold_pad", "lx", "ly", "buttons"), &DcWalker::set_hold_pad);
     ClassDB::bind_method(D_METHOD("coop_revive"), &DcWalker::coop_revive);
@@ -108,6 +112,7 @@ void DcWalker::setup(std::shared_ptr<dccore::Dungeon> dungeon, const dccore::Flo
     player_ = player;
     floor_ = floor;
     walker_ = std::make_unique<dccore::Walker>(dungeon_.get(), &layout_);
+    if (const char *m = std::getenv("DC_MASK")) walker_->params.mask = std::atoi(m);   // (experiments: polygon types the player ignores)
     if (!walker_->place_at_stairs()) walker_->place_at_start();
     for (int i = 0; i < 400; ++i) if (layout_.cell[size_t(i)].part == 0x1e) visited_[size_t(i)] = 1;
     add_child(floor_);
@@ -126,8 +131,8 @@ dccore::PadRaw DcWalker::read_devices() const {
     if (input_blocked_) return pad;   // (a menu is open in co-op: the world goes on, the player stands still)
     Input *in = Input::get_singleton();
     auto to_raw = [](float v) { return uint8_t(std::clamp(int(std::lround(128.0 + v * 127.0)), 0, 255)); };
-    float lx = float(in->get_joy_axis(0, JOY_AXIS_LEFT_X)), ly = float(in->get_joy_axis(0, JOY_AXIS_LEFT_Y));
-    float rx = float(in->get_joy_axis(0, JOY_AXIS_RIGHT_X)), ry = float(in->get_joy_axis(0, JOY_AXIS_RIGHT_Y));
+    const dc_pad::State joy = dc_pad::read();   // the DualShock: the PS2 pad word as the game reads it (dc_pad.h), the same buttons as in PCSX2
+    float lx = joy.lx, ly = joy.ly, rx = joy.rx, ry = joy.ry;
     if (in->is_physical_key_pressed(KEY_A) || in->is_physical_key_pressed(KEY_LEFT)) lx -= 1.0f;
     if (in->is_physical_key_pressed(KEY_D) || in->is_physical_key_pressed(KEY_RIGHT)) lx += 1.0f;
     if (in->is_physical_key_pressed(KEY_W) || in->is_physical_key_pressed(KEY_UP)) ly -= 1.0f;
@@ -140,15 +145,16 @@ dccore::PadRaw DcWalker::read_devices() const {
     pad.ly = to_raw(std::clamp(ly, -1.0f, 1.0f));
     pad.rx = to_raw(std::clamp(rx, -1.0f, 1.0f));
     pad.ry = to_raw(std::clamp(ry, -1.0f, 1.0f));
-    if (in->is_physical_key_pressed(KEY_Q) || in->is_joy_button_pressed(0, JOY_BUTTON_LEFT_SHOULDER)) pad.buttons |= dccore::kPadCamLeft;
-    if (in->is_physical_key_pressed(KEY_E) || in->is_joy_button_pressed(0, JOY_BUTTON_RIGHT_SHOULDER)) pad.buttons |= dccore::kPadCamRight;
-    if (in->is_physical_key_pressed(KEY_R) || in->is_joy_button_pressed(0, JOY_BUTTON_LEFT_STICK)) pad.buttons |= dccore::kPadBehind;
-    if (in->is_physical_key_pressed(KEY_Z) || in->is_joy_button_pressed(0, JOY_BUTTON_X)) pad.buttons |= dccore::kPadUse;   // use the quick item
-    if (in->is_physical_key_pressed(KEY_BRACKETLEFT) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_LEFT)) pad.buttons |= dccore::kPadItemLeft;
-    if (in->is_physical_key_pressed(KEY_BRACKETRIGHT) || in->is_joy_button_pressed(0, JOY_BUTTON_DPAD_RIGHT)) pad.buttons |= dccore::kPadItemRight;
-    if (in->is_physical_key_pressed(KEY_T) || in->is_joy_button_pressed(0, JOY_BUTTON_Y)) pad.buttons |= 0x10;   // triangle (the EB duel)
-    if (in->is_physical_key_pressed(KEY_X) || in->is_joy_button_pressed(0, JOY_BUTTON_B)) pad.buttons |= dccore::kPadNO;   // lock on
-    if (in->is_physical_key_pressed(KEY_SPACE) || in->is_physical_key_pressed(KEY_ENTER) || in->is_physical_key_pressed(KEY_F) || in->is_joy_button_pressed(0, JOY_BUTTON_A)) pad.buttons |= dccore::kPadOK;
+    pad.buttons |= joy.bits;
+    if (in->is_physical_key_pressed(KEY_Q)) pad.buttons |= dccore::kPadCamLeft;
+    if (in->is_physical_key_pressed(KEY_E)) pad.buttons |= dccore::kPadCamRight;
+    if (in->is_physical_key_pressed(KEY_R)) pad.buttons |= dccore::kPadBehind;
+    if (in->is_physical_key_pressed(KEY_Z)) pad.buttons |= dccore::kPadUse;   // use the quick item
+    if (in->is_physical_key_pressed(KEY_BRACKETLEFT)) pad.buttons |= dccore::kPadItemLeft;
+    if (in->is_physical_key_pressed(KEY_BRACKETRIGHT)) pad.buttons |= dccore::kPadItemRight;
+    if (in->is_physical_key_pressed(KEY_T)) pad.buttons |= 0x10;   // triangle (the EB duel)
+    if (in->is_physical_key_pressed(KEY_X)) pad.buttons |= dccore::kPadNO;   // lock on
+    if (in->is_physical_key_pressed(KEY_SPACE) || in->is_physical_key_pressed(KEY_ENTER) || in->is_physical_key_pressed(KEY_F)) pad.buttons |= dccore::kPadOK;
     return pad;
 }
 
@@ -239,7 +245,7 @@ void DcWalker::step_ticks(int n) {
     for (int i = 0; i < n; ++i) {
         dccore::PadRaw pad;
         if (size_t(tick_count_) < script_.size()) pad = script_[size_t(tick_count_)];
-        else if (use_devices_) pad = read_devices();
+        else if (use_devices_) { pad = read_devices(); dc_pad::record(pad.lx, pad.ly, pad.rx, pad.ry, pad.buttons, 0); }   // (portkit replay: PK_RECORD_PAD)
         else if (hold_pad_on_) pad = hold_pad_;
         // The game's order inside one frame: MoveChara (the player), the monsters' Step (AI, damage), the characters' motions, then the life bar.
         const bool ok_now = (pad.buttons & dccore::kPadOK) != 0, ok_down = ok_now && !prev_ok_;
@@ -370,6 +376,7 @@ void DcWalker::step_ticks(int n) {
                             if (!b.active) continue;
                             if (b.win_start != 0.0f && (m.motion.time <= b.win_start || b.win_end < m.motion.time)) continue;
                             const float gap = dccore::vu_dist(b.pos, e.pos) - (b.radius + e.radius);
+                            if (gap < 12.0f && std::getenv("DC_GAPDBG")) std::printf("GAP tick %d slot %d gap %.2f entry (%.1f %.1f %.1f r %.1f) body %s (%.1f %.1f %.1f r %.1f) hero (%.1f %.1f %.1f) pct %d %d %d %d %d %d motion %d t %.1f\n", int(tick_count_), m.slot, gap, e.pos[0], e.pos[1], e.pos[2], e.radius, b.bone.c_str(), b.pos[0], b.pos[1], b.pos[2], b.radius, walker_->player.pos[0], walker_->player.pos[1], walker_->player.pos[2], b.attacker_pct[0], b.attacker_pct[1], b.attacker_pct[2], b.attacker_pct[3], b.attacker_pct[4], b.attacker_pct[5], int(m.motion.cur), double(m.motion.time));
                             if (gap < dbg_best_gap_) { dbg_best_gap_ = gap; dbg_best_slot_ = m.slot; dbg_best_tick_ = tick_count_; }
                         }
                     }
@@ -392,6 +399,26 @@ void DcWalker::step_ticks(int n) {
             else if (coop_role_ == 2) coop_capture(2);
             if (fighting_) walker_->update_motion_request();
             if (coop_role_ != 2) world_->step_motions();
+            if (layout_.fixed && floor_) {   // Dran's arena tiles (CDranMapField::Step): crumble when shot, the model follows
+                dccore::dran_field_step(layout_);
+                for (int ti : layout_.dran_events) {
+                    Dictionary d;
+                    d["kind"] = 33;
+                    d["a"] = 0x6c9;
+                    d["b"] = Vector3(0, 0, 0);
+                    d["boss"] = false;
+                    d["stop"] = false;
+                    notice_queue_.push_back(d);
+                    if (coop_role_ == 1) coop_sound_out_.push_back(d);
+                    (void)ti;
+                }
+                layout_.dran_events.clear();
+                for (int ti = 0; ti < 12; ++ti)
+                    if (dran_shown_[size_t(ti)] != layout_.dran_state[size_t(ti)] || layout_.dran_state[size_t(ti)] == 1) {
+                        dran_shown_[size_t(ti)] = layout_.dran_state[size_t(ti)];
+                        floor_->set_dran_tile(ti, layout_.dran_state[size_t(ti)], double(layout_.dran_time[size_t(ti)]));
+                    }
+            }
             if (fighting_) {
                 walker_->step_motion();
                 walker_->step_status();
@@ -583,7 +610,7 @@ void DcWalker::swap_floor() {
     const dccore::FloorEvents *evp = coop ? (to_back ? &back_.events : &main_initial_events_) : (events_ ? &events_->ev : &back_.events);
     const uint32_t saved_rng = rng_.state;
     if (coop) rng_.seed(layout_.seed * 2654435761u + (to_back ? 0xB4C4u : 0xA1A1u));
-    monsters_->arrange(layout_, *game_tables_, ev_map_, rng_, to_back ? 8 : 15, -1, [this](int slot) {
+    monsters_->arrange(layout_, *game_tables_, ev_map_, rng_, dccore::coop_spawn_count(to_back ? 8 : 15, coop_players_), -1, [this](int slot) {
         world_->spawn(slot);
         for (int k = 0; k < 3; ++k) monsters_->slots[size_t(slot)].pos[k] = world_->actors[size_t(slot)].pos[k];
     }, evp);
@@ -759,6 +786,7 @@ void DcWalker::set_monsters(std::shared_ptr<dccore::MonsterUnit> unit, const dcc
     world_ = std::make_unique<dccore::MonsterWorld>(dungeon_.get(), &layout_, monsters_.get(), &rng_);
     world_->set_monster_shape(std::move(monster_shape));
     world_->floor_map = map_no;
+    world_->set_coop_players(coop_players_);
     const dccore::PlayerState &pl = walker_->player;
     std::copy(pl.pos, pl.pos + 3, world_->player.pos);
     if (boss_floor_) {   // the boss and its helpers: view slots in the order of the layout row (BtLoadMonstor + SetupViewMonstor)
@@ -774,7 +802,7 @@ void DcWalker::set_monsters(std::shared_ptr<dccore::MonsterUnit> unit, const dcc
             for (int k = 0; k < 3; ++k) mi.pos[k] = world_->actors[b].pos[k];
         }
     } else if (!layout_.fixed)   // (the monsters of a fixed map come with its events)
-        monsters_->arrange(layout_, tables, map_no, rng_, 15, -1, [this](int slot) {
+        monsters_->arrange(layout_, tables, map_no, rng_, dccore::coop_spawn_count(15, coop_players_), -1, [this](int slot) {
             world_->spawn(slot);
             for (int k = 0; k < 3; ++k) monsters_->slots[size_t(slot)].pos[k] = world_->actors[size_t(slot)].pos[k];
         }, events);
@@ -906,6 +934,7 @@ Array DcWalker::debug_monster_cols() const {
             c["r"] = b.radius;
             c["pos"] = Vector3(b.pos[0], b.pos[1], b.pos[2]);
             c["win"] = Vector2(b.win_start, b.win_end);
+            { Array pc; for (int v : b.attacker_pct) pc.push_back(v); c["pct"] = pc; }
             cols.push_back(c);
         }
         d["cols"] = cols;
@@ -931,6 +960,10 @@ Array DcWalker::get_monster_info() const {
             d["motion"] = world_->actors[size_t(i)].motion.cur;
             d["active"] = int(world_->actors[size_t(i)].active);
             d["code"] = world_->actors[size_t(i)].monster_code;
+            d["lockon_sw"] = world_->actors[size_t(i)].lockon_sw;
+            d["lockon_dist"] = world_->actors[size_t(i)].lockon_dist;
+            d["lock_bone"] = String(world_->actors[size_t(i)].lock_bone.c_str());
+            d["lock_pos"] = Vector3(world_->actors[size_t(i)].lock_pos[0], world_->actors[size_t(i)].lock_pos[1], world_->actors[size_t(i)].lock_pos[2]);
             d["kind"] = monsters_->bases[size_t(m.base)].entry.kind();
         }
         out.push_back(d);
@@ -1117,7 +1150,9 @@ Dictionary DcWalker::get_player_status() const {
         t["slot"] = tgt;
         t["hp"] = act.hp;
         t["hp_max"] = act.hp_max;
-        t["pos"] = Vector3(act.lock_pos[0], act.lock_pos[1], act.lock_pos[2]);
+        float aim[3];
+        world_->lock_aim_pos(act, aim);
+        t["pos"] = Vector3(aim[0], aim[1], aim[2]);   // (the cursor and the aim point)
         t["locked"] = world_->lock.flag != 0;
         d["target"] = t;
     }
@@ -1709,6 +1744,7 @@ void DcWalker::set_dungeon_session(std::shared_ptr<dccore::DungeonSession> s, in
     };
     session_->move_frame = [this](const std::string &name, const float off[3], const float rot[3]) {
         frame_moves_[name] = Vector3(off[0], off[1], off[2]);
+        layout_.frame_moves[name] = {off[0], off[1], off[2]};
         if (floor_) floor_->set_object(String(name.c_str()), Vector3(off[0], off[1], off[2]), Vector3(rot[0], rot[1], rot[2]));
     };
     session_->frame_draw = [this](const std::string &name, bool show) {
@@ -2176,6 +2212,7 @@ PackedFloat32Array DcWalker::coop_snapshot() const {
         out.push_back(float(a.state)); out.push_back(float(a.active)); out.push_back(float(a.hp));
         out.push_back(a.pos[0]); out.push_back(a.pos[1]); out.push_back(a.pos[2]); out.push_back(a.rot[1]);
         out.push_back(float(a.motion.cur)); out.push_back(a.motion.time);
+        out.push_back(float(a.lockon_sw)); out.push_back(a.lockon_dist);   // (set by the monster's script, which only the host runs: the lock-on of the others needs them)
     }
     out.push_back(float(dccore::Drops::kSize));
     out.push_back(world_->drops.spin);
@@ -2201,14 +2238,15 @@ void DcWalker::coop_apply_snapshot(const PackedFloat32Array &snap) {
     int at = 0;
     const int slots = int(f[at++]);
     for (int i = 0; i < slots; ++i) {
-        if (at + 9 > snap.size()) return;
+        if (at + 11 > snap.size()) return;
         if (i < dccore::MonsterUnit::kSlots) {
             dccore::MonsterActor &a = world_->actors[size_t(i)];
             a.state = int(f[at]); a.active = int(f[at + 1]); a.hp = int(f[at + 2]);
             a.pos[0] = f[at + 3]; a.pos[1] = f[at + 4]; a.pos[2] = f[at + 5]; a.rot[1] = f[at + 6];
             a.motion.cur = int(f[at + 7]); a.motion.time = f[at + 8];
+            a.lockon_sw = int(f[at + 9]); a.lockon_dist = f[at + 10];
         }
-        at += 9;
+        at += 11;
     }
     if (at + 2 > snap.size()) return;
     const int drops = int(f[at++]);
@@ -2268,6 +2306,7 @@ PackedInt32Array DcWalker::coop_event_state() const {
     for (const dccore::MarkerState &m : events_->marker_state) out.push_back(m.on ? 1 : 0);
     for (int i = 0; i < dccore::kGrid * dccore::kGrid; ++i) out.push_back(size_t(i) < layout_.door_open.size() ? layout_.door_open[size_t(i)] : 0);
     for (const dccore::FloorEvent &e : ev.events) { out.push_back(e.type); out.push_back(e.state); }
+    for (int v : layout_.dran_state) out.push_back(v);   // Dran's arena tiles (they only ever go down)
     return out;
 }
 
@@ -2311,6 +2350,12 @@ void DcWalker::coop_apply_event_state(const PackedInt32Array &pairs) {
         if (i < int(ev.events.size()) * 2) {
             dccore::FloorEvent &e = ev.events[size_t(i / 2)];
             if (i % 2 == 0) e.type = v; else e.state = v;
+            continue;
+        }
+        i -= int(ev.events.size()) * 2;
+        if (i >= 0 && i < 12 && v < layout_.dran_state[size_t(i)]) {   // a tile the host's shots took down: the crumbling starts here too
+            layout_.dran_state[size_t(i)] = v;
+            if (v == 1) layout_.dran_time[size_t(i)] = 0.0f;
         }
     }
 }

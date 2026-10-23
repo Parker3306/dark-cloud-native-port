@@ -177,7 +177,7 @@ void FishingSim::step_fish(Fish& f, const float hook[3]) {
     } else if (--f.move_timer < 0) {
         f.move_timer = int(rng_->next() % 100u) + 20;
         if (!f.moved_once) { f.move_mode = 1; f.moved_once = true; }
-        else f.move_mode = int(rng_->next() & 1u);
+        else f.move_mode = int((rng_->next() >> 15) & 1u);   // (the game's rand() & 1; the low bit of the LCG alternates with every call, so when a fish's decisions always take an even number of draws it never changes its mind: the game has many other consumers of rand() that break the pattern, this port has only the fish)
         if (f.move_mode == 1) {
             f.move_timer += 30;
             f.target_yaw = angle_limit(2.0f * kPi * rnd());

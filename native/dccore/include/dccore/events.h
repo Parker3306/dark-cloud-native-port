@@ -5,7 +5,11 @@
 //
 // Known difference from the real game: PresetSmallItemNo_Get compares a random roll with a rate table that the game copies from the wrong address (it copies 380 bytes
 // from `ItemSetRateTbl + map * 4`, i.e. the pointer table itself, instead of from the table it points to). Rates of items 1..190 therefore come out of whatever data
-// follows that address (reproduced here from the disc); rates of the other items come from uninitialised stack memory, which is treated as zero here.
+// follows that address (reproduced here from the disc); rates of the other items (191..) come from uninitialised stack memory. That memory is not random: it is what the
+// callers left in the same stack slots (saved pointers to the main / back map, stack addresses, float constants, loop counters ...). `kStackRates` holds the slots that were
+// identical in every recording of the real call chain (tools/dc/probe_preset.py: 4 dungeons x 3 seeds, buildEventData of the main floor and of the back floor); the slots that
+// change with the seed (small counters, 0..14) are taken as zero, so the pick differs from the game in the few floors where one of those slots is hit with a roll below its value.
+// The weapon-ownership penalty of the real function (rates of owned weapons drop by 10 / 20) is not modelled.
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -33,6 +37,7 @@ public:
     int max_floor[7] = {};
     std::array<uint8_t, 380> rate_bytes[7] = {};
     int rate(int map, int id) const;             // see the note above
+    int stack_rate(int id, bool back) const;     // the rate PresetSmallItemNo_Get finds for an item above 190 (stale stack data, see the note above)
 
     // PresetSmallItemNo_Get(map, floor, table, small): item id for a chest or -1
     int preset_item(int map, int floor, int table, bool small, GameRand& rng) const;

@@ -28,10 +28,10 @@ int MonsterWorld::set_near_target(int shift, bool force) {
     const float fwd_raw[3] = {s, 0.0f, c};
     const vu0::V3 fwd = vu0::normalize(fwd_raw);
     const float me[3] = {player.pos[0], player.pos[1], player.pos[2]};
-    int cand[16];
-    float dist[16];
+    int cand[MonsterUnit::kSlots];
+    float dist[MonsterUnit::kSlots];
     int count = 0;
-    for (int k = 0; k < 16; ++k) cand[k] = -1;
+    for (int k = 0; k < MonsterUnit::kSlots; ++k) cand[k] = -1;
     for (int i = 0; i < MonsterUnit::kSlots; ++i) {
         const MonsterActor& a = actors[size_t(i)];
         if (a.slot < 0 || a.state != 2 || a.hp <= 0) continue;
@@ -53,10 +53,10 @@ int MonsterWorld::set_near_target(int shift, bool force) {
         return 0;
     }
     // the candidates sorted by distance (the game's selection sort: the nearest of what is left each round)
-    int sorted[16];
-    int left[16];
-    float dleft[16];
-    for (int k = 0; k < 16; ++k) sorted[k] = -1;
+    int sorted[MonsterUnit::kSlots];
+    int left[MonsterUnit::kSlots];
+    float dleft[MonsterUnit::kSlots];
+    for (int k = 0; k < MonsterUnit::kSlots; ++k) sorted[k] = -1;
     for (int k = 0; k < count; ++k) { left[k] = cand[k]; dleft[k] = dist[k]; }
     for (int r = 0; r < count; ++r) {
         int first = 0;
@@ -91,6 +91,31 @@ int MonsterWorld::set_near_target(int shift, bool force) {
     return count;
 }
 
+// where the cursor sits and what is shot at the lock: the monster's lock-on frame, else its position + 8 (setTargetCursor); a boss without a frame of its own is aimed at the
+// largest body sphere (the game's spot is the model's origin, which sits under a big body)
+void MonsterWorld::lock_aim_pos(const MonsterActor& a, float p[3]) const {
+    p[0] = a.pos[0]; p[1] = fadd(a.pos[1], 8.0f); p[2] = a.pos[2];
+    if (!a.lock_bone.empty() && a.lock_joint >= 0) {
+        p[0] = a.lock_pos[0]; p[1] = a.lock_pos[1]; p[2] = a.lock_pos[2];
+    } else if (a.kind == 2) {
+        float c[3] = {0, 0, 0};
+        int n = 0;
+        for (const BodyCol& b : a.body_cols)
+            if (b.active && b.joint >= 0 && (b.pos[0] != 0.0f || b.pos[1] != 0.0f || b.pos[2] != 0.0f)) { c[0] += b.pos[0]; c[1] += b.pos[1]; c[2] += b.pos[2]; ++n; }
+        const BodyCol* best = nullptr;
+        if (n > 0) {   // the sphere nearest to the middle of all of them: the torso
+            for (float& v : c) v /= float(n);
+            float best_d = 1e30f;
+            for (const BodyCol& b : a.body_cols)
+                if (b.active && b.joint >= 0 && (b.pos[0] != 0.0f || b.pos[1] != 0.0f || b.pos[2] != 0.0f)) {
+                    const float d = vu0::dist(b.pos, c);
+                    if (d < best_d) { best_d = d; best = &b; }
+                }
+        }
+        if (best) { p[0] = best->pos[0]; p[1] = best->pos[1]; p[2] = best->pos[2]; }
+    }
+}
+
 void MonsterWorld::update_lock_cursor() {
     if (lock.flag == 0) {
         lock.shift_rot = set_near_target(0, true);
@@ -114,10 +139,7 @@ void MonsterWorld::update_lock_cursor() {
         if (dy < 0.0f) dy = -dy;
         if (80.0f <= dy) ok = false;
     }
-    p[1] = fadd(p[1], 8.0f);
-    if (!a.lock_bone.empty() && a.lock_joint >= 0) {
-        p[0] = a.lock_pos[0]; p[1] = a.lock_pos[1]; p[2] = a.lock_pos[2];
-    }
+    lock_aim_pos(a, p);
     lock.pos[0] = p[0]; lock.pos[1] = p[1]; lock.pos[2] = p[2]; lock.pos[3] = 1.0f;
     const int wid = status.weapon(status.character()).id();
     if ((wid == 0x12f || wid == 0x138) && lock.flag != 0 && rng_) {   // a joke of one weapon: a rand() every frame

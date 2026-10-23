@@ -27,6 +27,23 @@ int main(int argc, char** argv) {
         if (const char* e = std::getenv("DC_FLOOR")) gs.floor_no = std::atoi(e);
         FloorLayout layout = build_random_map(uint32_t(std::strtoul(argv[3], nullptr, 0)), std::atoi(argv[4]), std::atoi(argv[5]), true, &gs);
         const float x = float(std::atof(argv[6])), z = float(std::atof(argv[7]));
+        if (argc > 10 && std::string(argv[8]) == "--walls") {   // --walls x0 x1 (every wall polygon of the pieces of a fixed map with a vertex in z..z+... see below): argv[9] = z0, argv[10] = z1
+            const float z0 = float(std::atof(argv[9])), z1 = float(std::atof(argv[10]));
+            for (const auto& kv : dun.collisions) {
+                const CollisionPiece& pc = kv.second;
+                for (size_t i = 0; i < pc.polys.size(); ++i) {
+                    const CCPoly& q = pc.polys[i];
+                    float top = std::max({q.v[0][1], q.v[1][1], q.v[2][1]});
+                    float zmin = std::min({q.v[0][2], q.v[1][2], q.v[2][2]}), zmax = std::max({q.v[0][2], q.v[1][2], q.v[2][2]});
+                    float len = std::sqrt(q.n[0] * q.n[0] + q.n[1] * q.n[1] + q.n[2] * q.n[2]);
+                    if (len <= 0 || zmax < z0 || zmin > z1) continue;
+                    if (!std::getenv("DCALL") && (std::fabs(q.n[1] / len) >= 0.5f || top <= 4.0f)) continue;
+                    std::printf("attr %x type %d %s obj %s: (%g,%g,%g) (%g,%g,%g) (%g,%g,%g)\n", q.attr[0], q.type(), kv.first.c_str(), i < pc.obj.size() ? pc.obj_names[pc.obj[i]].c_str() : "?", double(q.v[0][0]), double(q.v[0][1]), double(q.v[0][2]),
+                                double(q.v[1][0]), double(q.v[1][1]), double(q.v[1][2]), double(q.v[2][0]), double(q.v[2][1]), double(q.v[2][2]));
+                }
+            }
+            return 0;
+        }
         if (argc > 8 && std::string(argv[8]) == "--fixed-frames") {   // a boss / story room (fixed map): every frame of its collision pieces and the objects of its models
             for (const auto& kv : dun.collisions) {
                 std::printf("collision %s: %zu polygons\n", kv.first.c_str(), kv.second.polys.size());

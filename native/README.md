@@ -13,7 +13,7 @@ Rules
 Play (after `powershell -File nativeuild.ps1`; Godot paths come from `native\env.ps1`)
 - `powershell -File native\play.ps1` starts the game: title screen (New Game / Continue / Co-op), the village, the dungeons. It reads your disc image `iso\Dark Cloud (USA).iso` (`--iso <path>` for another one).
 - Keys: WASD / arrows move, Space / Enter / F = action (talk, open, attack), X = lock on / cancel, Z = use the quick item, `[` `]` = pick the quick item, T = triangle (the duels), R = camera behind, Q / E = camera left / right (in a co-op town they change the character), IJKL = right stick, Tab / Esc = menu, F11 = full screen. A gamepad works too.
-- Co-op (up to 4 players, notes/coop_native.md): one player presses Host on the Co-op page, the others Join with his address (port 27015 UDP; the UPnP button opens it on the router for 6 hours, never automatically). Each player gets a colour; in a dungeon `[` `]` change the character, D in the item list drops an item for the others.
+- Co-op (up to 4 players, notes/coop_native.md): one player presses Host on the Co-op page, the others Join with his address (port 8211 UDP; the UPnP button opens it on the router for 6 hours, never automatically). Each player gets a colour; in a dungeon `[` `]` change the character, D in the item list drops an item for the others.
 - The game volume starts at 5 % (`godot/launch_volume.gd`).
 
 Test harnesses (scripted, for screenshots and regression runs): `work/smoke.sh` (command line tools + short Godot runs + the back floor and trapped chest scenarios), `work/coop_smoke.sh` (two Godot instances on this PC). Flags are listed at the top of `godot/play.gd` (dungeon), `town_play.gd` (town) and `game.gd` (shell).

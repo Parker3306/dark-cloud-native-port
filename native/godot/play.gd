@@ -18,6 +18,8 @@ func _ready() -> void:
 	var dungeon := int(_arg("--dungeon", "0"))
 	var floor_index := int(_arg("--floor", "0"))
 	models.new_game(int(_arg("--seed", "1")))
+	if _arg("--coop-players", "") != "":   # test: the floors get the balance of that many players (hit points, damage, monster count, drops; dccore/coop_scale.h) without a network
+		models.set_coop_players(int(_arg("--coop-players")))
 	if _arg("--load", "") != "":
 		if models.load_game(ProjectSettings.globalize_path("user://save1.dc")):
 			var info := models.get_session_status()
@@ -45,6 +47,8 @@ func _ready() -> void:
 			options["sound"] = snd
 	if _arg("--script", "") != "":
 		options["script"] = DungeonRun.parse_script(_arg("--script"))
+	if _arg("--pad-file", "") != "":   # portkit replay: the recorded controller input of a human (portkit/PORTKIT.md), one entry per tick
+		options["script"] = preload("res://pad_file.gd").load_ticks(_arg("--pad-file"))
 	if _arg("--teleport", "") != "":
 		var t := _arg("--teleport").split(",")
 		options["teleport"] = [float(t[0]), float(t[1]), float(t[2]) if t.size() > 2 else 30.0]
@@ -103,8 +107,19 @@ func _ready() -> void:
 		var pq := _arg("--polys").split(",")
 		var plist: Array = run.walker.debug_polys_near(float(pq[0]), float(pq[1]))
 		print("POLYS ", plist.size())
+		var px := float(pq[0])
+		var pz := float(pq[1])
 		for q in plist:
 			if absf(q["n"].y) < 0.7:
+				if pq.size() > 2:   # x,z,range: only the walls that reach above the feet (4) within that range of the point
+					var rg := float(pq[2])
+					var near := false
+					for k in ["v0", "v1", "v2"]:
+						var v: Vector3 = q[k]
+						if absf(v.x - px) < rg and absf(v.z - pz) < rg and maxf(maxf(q["v0"].y, q["v1"].y), q["v2"].y) > 4.0:
+							near = true
+					if not near:
+						continue
 				print("WALL ", q)
 	if _arg("--scan", "") != "":   # x0,x1,z0,z1,step,from_y: print the floor heights under a grid
 		var sc := _arg("--scan").split(",")
@@ -169,12 +184,22 @@ func _ready() -> void:
 					run.coop.cycle_character(int(_arg("--cycle", "1")))
 				if _arg("--god", "") != "" and run.walker != null:
 					run.walker.debug_full_life()
+				if _arg("--pad-pulse", "") != "" and run.walker != null:   # --pad-pulse START,PERIOD,MASK: from START seconds a pad button (mask 64 = OK, 32 = lock-on) is pressed for a moment every PERIOD seconds
+					var pp := _arg("--pad-pulse").split(",")
+					var el := float(Time.get_ticks_msec() - started) / 1000.0 - float(pp[0])
+					run.walker.set_hold_pad(128, 128, int(pp[2]) if el >= 0.0 and fposmod(el, float(pp[1])) < 0.12 else 0)
+				if _arg("--god", "") != "" and run.walker != null:
+					run.walker.debug_full_life()
+				if _arg("--dran-hit-at", "") != "" and run.coop != null and float(Time.get_ticks_msec() - started) > float(_arg("--dran-hit-at").split(":")[0]) * 1000.0 and not _dran_done.has("live"):   # --dran-hit-at SECONDS:TILE: a shot hits that tile of Dran's floor
+					_dran_done["live"] = true
+					run.walker.debug_dran_hit(int(_arg("--dran-hit-at").split(":")[1]))
+					run.walker.debug_dran_hit(int(_arg("--dran-hit-at").split(":")[1]))
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("%s_live%s.png" % [prefix, s])
 			var info := ""
 			if net != null and run.coop != null:
 				info = " index %d puppets %d" % [net.my_index, run.coop.puppets.size()]
-			print("LIVE ", s, " floor ", run.floor_no, " player ", run.walker.get_player_position(), info, " coop ", run.walker.coop_debug(), " life ", run.walker.get_player_status().get("life", -1), " bag ", run.walker.get_bag().size(), " back ", run.walker.is_back_floor())
+			print("LIVE ", s, " floor ", run.floor_no, " player ", run.walker.get_player_position(), info, " coop ", run.walker.coop_debug(), " life ", run.walker.get_player_status().get("life", -1), " bag ", run.walker.get_bag().size(), " back ", run.walker.is_back_floor(), " dran ", run.walker.get_dran_state() if _arg("--dran-hit-at", "") != "" else "")
 			if _arg("--live-events", "") != "":
 				var chs: Array = run.walker.get_event_info()["chests"]
 				print("  CHESTS ", chs.slice(0, 3))
@@ -198,6 +223,25 @@ func _ready() -> void:
 				for mi in run.walker.get_monster_info():
 					if int(mi.get("hp", 0)) > int(_arg("--boss-hp", "1")):
 						run.walker.debug_set_monster_hp(int(mi["slot"]), int(_arg("--boss-hp", "1")))
+			if _arg("--track", "") != "" and int(done + (target - done - remaining)) % int(_arg("--track")) < chunk:   # --track N: every N ticks the hero and the living monsters
+				var tk := PackedStringArray()
+				for mi in run.walker.get_monster_info():
+					if int(mi.get("hp", 0)) > 0:
+						var mp: Vector3 = mi["pos"]
+						tk.append("%s(%.0f,%.0f,%.0f m%d)" % [mi["name"], mp.x, mp.y, mp.z, int(mi.get("motion", 0))])
+				var hp3 := run.walker.get_player_position()
+				print("TRK ", int(done + (target - done - remaining)), " hero (%.0f,%.0f,%.0f) lock %d " % [hp3.x, hp3.y, hp3.z, int(run.walker.get_player_status().get("lock", 0))], " ".join(tk))
+			if _arg("--dran-hit", "") != "":   # --dran-hit TICK:TILE,..: a shot hits that tile of Dran's floor (0..11) from that tick on
+				for dh in _arg("--dran-hit").split(",", false):
+					var dp := dh.split(":")
+					if int(done + (target - done - remaining)) >= int(dp[0]) and not _dran_done.has(dh):
+						_dran_done[dh] = true
+						run.walker.debug_dran_hit(int(dp[1]))
+						run.walker.debug_dran_hit(int(dp[1]))
+						print("DRAN tiles ", run.walker.get_dran_state())
+			if _arg("--hold-at", "") != "" and int(done + (target - done - remaining)) >= int(_arg("--hold-from", "2300")):   # --hold-at x,z [--hold-from TICK]: the hero is put back there every chunk (where does the boss go when the player stands far away?)
+				var ha := _arg("--hold-at").split(",")
+				run.walker.teleport(float(ha[0]), float(ha[1]))
 			if _arg("--bot", "") != "":   # tests: a player that walks up to the nearest monster body sphere and swings (set --script none:1 so that devices stay off)
 				chunk = mini(remaining, 6)
 				_bot_pad(run, int(done + (target - done - remaining)))
@@ -255,6 +299,7 @@ func _ready() -> void:
 			print("  EVENTEND ", run.walker.debug_event_end())
 		if _arg("--cols", "") != "":   # the monsters' body spheres that are on
 			print("  HITSTATS ", run.walker.debug_hit_stats())
+			print("  DRANTILES ", run.walker.get_dran_state())
 			for mc in run.walker.debug_monster_cols():
 				print("  COLS ", mc)
 			for sp in run.walker.debug_player_spheres():
@@ -273,16 +318,33 @@ func _ready() -> void:
 func _bot_pad(run: DungeonRun, tick: int) -> void:
 	var w: DcWalker = run.walker
 	if w.get_event_ui().get("running", false):   # a scene or a message: the OK button (every 20 ticks) and the lock button for the choices
+		if _bot_pressed:
+			if not _bot_ran:
+				print("BOT event started at tick ", tick, " hero ", w.get_player_position())
+			_bot_ran = true
 		w.set_hold_pad(128, 128, 64 if (tick / 10) % 2 == 0 else 32)
 		return
 	var hero := w.get_player_position()
+	if _arg("--bot-lock-pulse", "") != "" and (tick / 6) % 20 == 0:   # tests: the lock-on button pressed every 120 ticks (once the key doors are done), whatever else the bot does
+		w.set_hold_pad(128, 128, 32)
+		return
+	if _bot_marker_step(w, hero, tick):
+		return
 	var best := Vector3.ZERO
 	var best_d := 1e9
-	for mc in w.debug_monster_cols():
-		if int(mc["hp"]) < 1:
+	var rng_pre := float(_arg("--bot-range", "24"))
+	var cols_all: Array = w.debug_monster_cols()
+	var any_open := false   # (what is invulnerable right now is left alone while something else can be hurt: d05's boss guards until its helpers are down)
+	for mc0 in cols_all:
+		if int(mc0["hp"]) >= 1 and int(mc0["muteki"]) == 0:
+			any_open = true
+	for mc in cols_all:
+		if int(mc["hp"]) < 1 or (any_open and int(mc["muteki"]) > 0):
 			continue
 		var pts: Array = []
 		for c in mc["cols"]:
+			if rng_pre < 100.0 and float(c["pos"].y) - float(c["r"]) - hero.y > 42.0:   # a melee fighter cannot reach what hovers higher than that: wait for it to come down
+				continue
 			pts.append(c["pos"])
 		if pts.is_empty():
 			continue
@@ -291,6 +353,24 @@ func _bot_pad(run: DungeonRun, tick: int) -> void:
 			if d < best_d:
 				best_d = d
 				best = p
+	if best_d > 1e8 and _arg("--bot-wait-near", "") != "":   # --bot-wait-near 1: nothing is open right now (a boss whose weak point opens only in some motions): stay close to the nearest living monster and be ready
+		var near_d := 1e9
+		var near_p := Vector3.ZERO
+		for mo in w.get_monster_info():
+			if int(mo["state"]) < 1:
+				continue
+			var mp: Vector3 = mo["pos"]
+			var dd := Vector2(mp.x - hero.x, mp.z - hero.z).length()
+			if dd < near_d:
+				near_d = dd
+				near_p = mp
+		if near_d < 1e8 and near_d > 30.0:
+			var cs0 := w.get_camera_state()
+			var fwd0 := Vector2(cs0["ref"].x - cs0["pos"].x, cs0["ref"].z - cs0["pos"].z).normalized()
+			var right0 := Vector2(-fwd0.y, fwd0.x)
+			var dn0 := Vector2(near_p.x - hero.x, near_p.z - hero.z).normalized()
+			w.set_hold_pad(int(clampf(128.0 + dn0.dot(right0) * 127.0, 0.0, 255.0)), int(clampf(128.0 - dn0.dot(fwd0) * 127.0, 0.0, 255.0)), 0)
+			return
 	if best_d > 1e8:
 		w.set_hold_pad(128, 128, 0)
 		return
@@ -308,8 +388,112 @@ func _bot_pad(run: DungeonRun, tick: int) -> void:
 	if best_d > 24.0 or rng >= 100.0:
 		lx = int(clampf(128.0 + sd * 127.0, 0.0, 255.0))
 		ly = int(clampf(128.0 - f * 127.0, 0.0, 255.0))
-	if best_d < maxf(40.0, rng) and (tick / 6) % 4 == 0:
+	elif best_d > 3.0:   # close: a gentle push towards it, so that the hero keeps facing it
+		lx = int(clampf(128.0 + sd * 40.0, 0.0, 255.0))
+		ly = int(clampf(128.0 - f * 40.0, 0.0, 255.0))
+	if best_d < maxf(40.0, rng) and ((tick / 6) % 4 == 0 or _arg("--bot-hold-ok", "") != ""):   # (--bot-hold-ok: Ungaga's blast needs the attack button held)
 		buttons = 64
 	if rng >= 100.0 and _arg("--bot-lock", "") != "":
-		buttons |= 32   # (the lock-on button is held)
+		if _arg("--bot-lock-pulse", "") != "":   # --bot-lock-pulse 1: a press every 120 ticks (the button toggles the lock; held it only counts once)
+			if (tick / 6) % 20 == 0:
+				buttons |= 32
+		else:
+			buttons |= 32   # (the lock-on button is held)
+	if _arg("--bot-throw", "") != "":   # --bot-throw 1: the lock-on is held and the quick item (--give / --quick) is thrown at the target every 60 ticks (the way to hurt what flies out of the sword's reach)
+		buttons = 0
+		if int(w.get_player_status().get("lock", 0)) == 0:   # (the lock-on button toggles: press it only while the lock is off)
+			if (tick / 6) % 5 == 0:
+				buttons = 32
+		elif (tick / 6) % 10 == 0:
+			buttons = 128
 	w.set_hold_pad(lx, ly, buttons)
+
+# --bot-markers 401,400: before it fights, the bot walks to each marker (by event id) in turn and uses it (the item-use button; automatic markers start by being stepped on) and waits until the event it started has ended.
+var _bot_mi := 0
+var _dran_done := {}
+var _bot_ran := false
+var _bot_pressed := false
+var _bot_ends := 0
+var _bot_best := 1e9
+var _bot_progress_tick := 0
+var _bot_detour_until := -1
+var _bot_side := 1.0
+var _bot_since := -1
+func _bot_marker_step(w: DcWalker, hero: Vector3, tick: int) -> bool:
+	var ids := _arg("--bot-markers", "").split(",", false)
+	if _bot_mi >= ids.size():
+		return false
+	if _bot_since < 0:
+		_bot_since = tick
+	var want := 0
+	var target := Vector3.ZERO
+	var found := false
+	var is_on := false
+	var radius := 6.0
+	var waypoint := ids[_bot_mi].contains(":")   # x:z = a point to walk to (round an obstacle)
+	if waypoint:
+		var xz := ids[_bot_mi].split(":")
+		target = Vector3(float(xz[0]), 0.0, float(xz[1]))
+		found = true
+		radius = 14.0
+	else:
+		want = int(ids[_bot_mi])
+		for m in w.get_event_info()["markers"]:
+			if int(m["event"]) == want:
+				radius = float(m["radius"]) * 0.7
+				target = m["pos"]
+				found = true
+				is_on = bool(m["on"])
+	var running: bool = w.get_event_ui().get("running", false)
+	if waypoint and not running and Vector2(target.x - hero.x, target.z - hero.z).length() <= radius:
+		_bot_mi += 1
+		_bot_since = -1
+		_bot_best = 1e9
+		return true
+	var ends := int(w.debug_event_end().get("count", 0))
+	if _bot_pressed and ends > _bot_ends:   # (a short event starts and ends between two looks)
+		_bot_ran = true
+	if _bot_ran and not running:   # the event it started has ended
+		print("BOT marker ", want, " done at tick ", tick, " hero ", hero)
+		_bot_mi += 1
+		_bot_ran = false
+		_bot_pressed = false
+		_bot_since = -1
+		_bot_best = 1e9
+		return true
+	if not found or (not is_on and tick - _bot_since > 600) or tick - _bot_since > 3000:
+		print("BOT marker ", want, " skipped (found ", found, " on ", is_on, ") at tick ", tick, " hero ", hero)
+		_bot_mi += 1
+		_bot_since = -1
+		return true
+	var d := Vector2(target.x - hero.x, target.z - hero.z)
+	var buttons := 0
+	var lx := 128
+	var ly := 128
+	if d.length() > radius:
+		var cs := w.get_camera_state()
+		var fwd := Vector2(cs["ref"].x - cs["pos"].x, cs["ref"].z - cs["pos"].z).normalized()
+		var right := Vector2(-fwd.y, fwd.x)
+		var dn := d.normalized()
+		if tick < _bot_detour_until:   # no progress for a while: go sideways round whatever is in the way (the side changes each time)
+			dn = Vector2(-dn.y, dn.x) * _bot_side + dn * 0.2
+			dn = dn.normalized()
+		else:
+			if d.length() < _bot_best - 8.0:
+				_bot_best = d.length()
+				_bot_progress_tick = tick
+			elif tick - _bot_progress_tick > 150:
+				_bot_side = -_bot_side
+				_bot_detour_until = tick + 240
+				_bot_progress_tick = tick + 240
+				_bot_best = d.length()
+		lx = int(clampf(128.0 + dn.dot(right) * 127.0, 0.0, 255.0))
+		ly = int(clampf(128.0 - dn.dot(fwd) * 127.0, 0.0, 255.0))
+	elif is_on and not waypoint and (tick / 6) % 3 == 0:
+		buttons = 128   # the item-use button
+		if not _bot_pressed:
+			print("BOT using marker ", want, " at tick ", tick)
+			_bot_ends = int(w.debug_event_end().get("count", 0))
+		_bot_pressed = true
+	w.set_hold_pad(lx, ly, buttons)
+	return true

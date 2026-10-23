@@ -62,6 +62,7 @@ void DcCharacter::_bind_methods() {
     ClassDB::bind_method(D_METHOD("find_joint", "name"), &DcCharacter::find_joint);
     ClassDB::bind_method(D_METHOD("set_player_color", "index"), &DcCharacter::set_player_color);
     ClassDB::bind_method(D_METHOD("get_player_color"), &DcCharacter::get_player_color);
+    ClassDB::bind_method(D_METHOD("set_joint_override", "joint", "rot", "pos", "set_rot", "set_pos"), &DcCharacter::set_joint_override);
 }
 
 int DcCharacter::get_motion_count() const { return ch_ ? int(ch_->motions.size()) : 0; }
@@ -117,9 +118,45 @@ Transform3D DcCharacter::attach_transform(int joint, const dccore::Mat4 &local) 
     return to_transform(pose_.world[size_t(joint)]) * to_transform(local);
 }
 
+void DcCharacter::set_joint_override(int joint, const Vector3 &rot, const Vector3 &pos, bool set_rot, bool set_pos) {
+    if (joint < 0) return;
+    JointOverride &o = joint_override_[joint];
+    if (set_rot) { o.rot = rot; o.set_rot = true; }
+    if (set_pos) { o.pos = pos; o.set_pos = true; }
+    apply_pose();
+}
+
 void DcCharacter::apply_pose() {
     if (!ch_ || !skeleton_) return;
     pose_ = dccore::evaluate_pose(ch_->skeleton, cur_set_ >= 0 && size_t(cur_set_) < ch_->extra_sets.size() ? ch_->extra_sets[size_t(cur_set_)] : ch_->tracks, time_);
+    if (!joint_override_.empty()) {
+        for (const auto &kv : joint_override_) {
+            if (size_t(kv.first) >= pose_.local.size()) continue;
+            dccore::Mat4 &m = pose_.local[size_t(kv.first)];
+            if (kv.second.set_rot) {   // row-vector rotation: Rx * Ry * Rz of the script's angles (the frame keeps its place)
+                const double cx = std::cos(double(kv.second.rot.x)), sx = std::sin(double(kv.second.rot.x));
+                const double cy = std::cos(double(kv.second.rot.y)), sy = std::sin(double(kv.second.rot.y));
+                const double cz = std::cos(double(kv.second.rot.z)), sz = std::sin(double(kv.second.rot.z));
+                const double rx[9] = {1, 0, 0, 0, cx, sx, 0, -sx, cx};
+                const double ry[9] = {cy, 0, -sy, 0, 1, 0, sy, 0, cy};
+                const double rz[9] = {cz, sz, 0, -sz, cz, 0, 0, 0, 1};
+                double t[9], r[9];
+                for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) { t[i * 3 + j] = 0; for (int k = 0; k < 3; ++k) t[i * 3 + j] += rx[i * 3 + k] * ry[k * 3 + j]; }
+                for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) { r[i * 3 + j] = 0; for (int k = 0; k < 3; ++k) r[i * 3 + j] += t[i * 3 + k] * rz[k * 3 + j]; }
+                for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) m[size_t(i * 4 + j)] = r[i * 3 + j];
+            }
+            if (kv.second.set_pos) { m[12] = double(kv.second.pos.x); m[13] = double(kv.second.pos.y); m[14] = double(kv.second.pos.z); }
+        }
+        const dccore::Skeleton &sk = ch_->skeleton;
+        for (size_t i = 0; i < sk.size(); ++i) {   // the worlds again (parents come first)
+            const int par = sk.parent[i];
+            if (par < 0 || size_t(par) >= i) { pose_.world[i] = pose_.local[i]; continue; }
+            const dccore::Mat4 &a = pose_.local[i], &b = pose_.world[size_t(par)];
+            dccore::Mat4 w{};
+            for (int r = 0; r < 4; ++r) for (int c = 0; c < 4; ++c) { double s = 0; for (int k = 0; k < 4; ++k) s += a[size_t(r * 4 + k)] * b[size_t(k * 4 + c)]; w[size_t(r * 4 + c)] = s; }
+            pose_.world[i] = w;
+        }
+    }
     const dccore::Pose &pose = pose_;
     // Bones and rigid parts use the full animated world matrices. Skinned vertices are skinned relative to the skin's parent (binds below) and then drawn
     // through that parent's world matrix by the game; with full-world bone poses the parent's matrix cancels out, so the body stays attached to the rigid parts.

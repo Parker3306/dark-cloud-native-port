@@ -79,6 +79,7 @@ class DcWalker : public Node3D {
     void poll_hit_markers();            // the character rooms: a sphere of the right character reaches a hit marker (Goro's log, Ruby's crystals, Ungaga's blast)
     std::vector<int> hint_char_;        // per marker: the character who already read the hint there (his next OK press is an attack, not a question)
     int ruby_key_ = 0;                  // the element the Ruby crystals of this floor want
+    std::array<int, 12> dran_shown_ = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};   // what the arena tile nodes show (Dran's floor)
     std::map<std::string, Vector3> frame_moves_;   // frames a room script moved (doors, switches): where they are now
     std::map<std::string, bool> frame_shown_;      // frames a room script showed or hid
     int spawn_script_monster(int k, bool load, const float *pos, int death_event);
@@ -104,6 +105,7 @@ class DcWalker : public Node3D {
     FloorSlot shelf_;
     dccore::FloorEvents main_initial_events_;   // the main floor's chests as they were built (co-op: the monsters of both floors are arranged from these so that every player gets the same ones)
     bool in_back_ = false, ura_pending_ = false;
+    int coop_players_ = 1;
     const dccore::GameTables *game_tables_ = nullptr;
     int ev_map_ = 0, ev_floor_ = 0;
     void swap_floor();
@@ -192,6 +194,9 @@ public:
     void set_back_floor(const dccore::FloorLayout &layout, dccore::FloorEvents events, std::vector<dccore::FloorMarker> markers, std::function<DcDungeon *(const dccore::FloorLayout &)> make_node,
             std::function<void(dccore::MonsterUnit &, bool)> load_monsters);
     bool is_back_floor() const { return in_back_; }
+    // co-op balance (dccore/coop_scale.h): the players of this floor, the same on every peer; set before set_monsters
+    void set_coop_players(int n) { coop_players_ = dccore::coop_clamp_players(n); if (world_) world_->set_coop_players(coop_players_); }
+    int get_coop_players() const { return coop_players_; }
     bool has_back_floor() const { return back_.present; }
     void debug_swap_floor() { swap_floor(); }   // tests
     void debug_kill_player() { if (world_) { const int ch = world_->status.character(); world_->status.set_life(ch, 0); world_->status.set<int16_t>(0x8a5c + size_t(ch) * 2, 0); world_->status.set<int16_t>(0x8a68 + size_t(ch) * 2, 0); } }   // tests
@@ -290,6 +295,8 @@ public:
     Array debug_player_spheres() const;
     Array debug_polys_near(double x, double z) const;
     bool dbg_ev_was_running_ = false; Vector3 dbg_ev_end_pos_; float dbg_ev_end_yaw_ = 0; int dbg_ev_end_tick_ = -1, dbg_ev_end_count_ = 0;   // tests: where the hero stood when the last script event ended
+    void debug_dran_hit(int tile) { if (tile >= 0 && tile < 12 && layout_.dran_state[size_t(tile)] > 1) --layout_.dran_state[size_t(tile)]; }   // tests: a shot hit that tile
+    PackedInt32Array get_dran_state() const { PackedInt32Array a; for (int v : layout_.dran_state) a.push_back(v); return a; }
     Dictionary debug_event_end() const { Dictionary d; d["pos"] = dbg_ev_end_pos_; d["yaw"] = dbg_ev_end_yaw_; d["tick"] = dbg_ev_end_tick_; d["count"] = dbg_ev_end_count_; return d; }   // tests: the collision polygons of the cell around (x, z): [{v0, v1, v2, n, attr}]
     float dbg_near_[4] = {1e9f, 0, 0, 0};   int dbg_near_slot_ = -1, dbg_near_tick_ = -1;   // tests: the closest a window-open body sphere came to the player (distance, its position)
     float dbg_best_gap_ = 1e9f; int dbg_best_slot_ = -1, dbg_best_tick_ = -1, dbg_sphere_ticks_ = 0;   // tests: the smallest gap (distance minus radii) between a player sphere and a monster body sphere that was on

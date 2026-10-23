@@ -136,6 +136,11 @@ func _on_presence(peer: int, state: Dictionary) -> void:
 	if not same_map:
 		_remove_puppet(peer)
 		return
+	var mode_key := int(state.get("mode", 0)) * 2 + (1 if bool(state.get("fish", {}).get("out", false)) else 0)
+	if mode_key != int(puppets.get(peer, {}).get("last_mode", -1)):   # (a trace line for the co-op tests)
+		print("PUPPET mode ", state.get("mode", 0), " motion ", state.get("motion", 0), " fish ", state.get("fish", {}))
+		if puppets.has(peer):
+			puppets[peer]["last_mode"] = mode_key
 	var ch := int(state.get("character", 0))
 	var idx := int(state.get("index", net.index_of(peer)))
 	var fishing := int(state.get("mode", 0)) == 5   # (the town's Toan with his rod; the motions of the pose are that pack's)
@@ -144,7 +149,7 @@ func _on_presence(peer: int, state: Dictionary) -> void:
 		_remove_puppet(peer)
 		var node: Node3D = null
 		if fishing:
-			node = run.models.make_town_model("gedit/%s/chara/c01d_turi.chr" % run.map_name.get_slice("/", 0), "c01d_turi.cfg", idx)
+			node = run.models.make_town_model("chara/c01d_turi.chr", "c01d_turi.cfg", idx)
 		if node == null:
 			fishing = false
 			node = run.models.make_player_model(ch, idx)
@@ -170,8 +175,10 @@ func _on_presence(peer: int, state: Dictionary) -> void:
 	p["target_yaw"] = float(state.get("yaw", 0.0))
 	var node2: DcCharacter = p["node"] as DcCharacter
 	var motion := int(state.get("motion", 0))
-	if int(state.get("mode", 0)) == 1 or (int(state.get("mode", 0)) == 5 and not bool(p.get("fishing", false))):   # in an event: the town's own motions are not this model's
+	var pmode := int(state.get("mode", 0))
+	if pmode == 1 or pmode == 2 or pmode == 3 or pmode == 4 or (pmode == 5 and not bool(p.get("fishing", false))):   # in an event, talking, editing, at a shop counter: the town hero's own motions are not this model's, he stands
 		motion = 0
+	_update_line(p, state if pmode == 5 and bool(p.get("fishing", false)) else {})
 	if node2.get_motion() != motion:
 		node2.play(motion, true)
 	node2.set_playing(true)
@@ -183,10 +190,57 @@ func _on_presence(peer: int, state: Dictionary) -> void:
 static func _color_of(idx: int) -> Color:
 	return [Color(1, 0.35, 0.35), Color(0.4, 0.6, 1), Color(0.45, 0.9, 0.45), Color(1, 0.9, 0.35)][clampi(idx, 0, 3)]
 
+# a fishing puppet's float and line (the presence carries the float, the rod tip and whether the line is out)
+func _update_line(p: Dictionary, state: Dictionary) -> void:
+	var fish: Dictionary = state.get("fish", {})
+	if fish.is_empty() or not bool(fish.get("out", false)):
+		if p.has("float") and is_instance_valid(p["float"]):
+			p["float"].visible = false
+			p["line"].visible = false
+		return
+	if not p.has("float") or not is_instance_valid(p["float"]):
+		var fl := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 1.4
+		sm.height = 2.8
+		fl.mesh = sm
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(1.0, 0.25, 0.2)
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fl.material_override = mat
+		run.walk.add_child(fl)
+		var ln := MeshInstance3D.new()
+		ln.mesh = ImmediateMesh.new()
+		var lm := StandardMaterial3D.new()
+		lm.albedo_color = Color(0.95, 0.95, 0.85)
+		lm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ln.material_override = lm
+		run.walk.add_child(ln)
+		p["float"] = fl
+		p["line"] = ln
+	var flt: Vector3 = fish["float"]
+	var tip: Vector3 = fish["tip"]
+	var slack := float(fish.get("slack", 1.0))
+	p["float"].visible = true
+	p["float"].position = flt
+	p["line"].visible = true
+	var im: ImmediateMesh = p["line"].mesh
+	im.clear_surfaces()
+	im.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	for i in range(25):
+		var u := float(i) / 24.0
+		var q := tip.lerp(flt, u)
+		q.y -= 6.0 * sin(u * PI) * slack
+		im.surface_add_vertex(q)
+	im.surface_end()
+
 func _remove_puppet(peer: int) -> void:
 	if puppets.has(peer):
 		if is_instance_valid(puppets[peer]["node"]):
 			puppets[peer]["node"].queue_free()
+		for k in ["float", "line"]:
+			if puppets[peer].has(k) and is_instance_valid(puppets[peer][k]):
+				puppets[peer][k].queue_free()
 		puppets.erase(peer)
 
 func _on_peer_left(peer: int) -> void:

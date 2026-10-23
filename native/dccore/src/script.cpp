@@ -86,7 +86,16 @@ Slot ScriptVm::pop() {
 
 int ScriptVm::run(int32_t id, const std::vector<Slot>& args) {
     if (!prog_) return -1;
-    const uint32_t rec = id < 0 ? prog_->default_record() : prog_->function_record(id);
+    std::vector<Slot> local_args;
+    uint32_t rec;
+    if (id <= -100) {   // tests: an internal function by its record offset, with one int argument: id = -100 - (record | argument << 24) (the fishing set-up of the ponds)
+        const uint32_t code = uint32_t(-(id + 100));
+        rec = code & 0xFFFFFFu;
+        local_args.push_back(Slot{0, int32_t(code >> 24)});
+    } else {
+        rec = id < 0 ? prog_->default_record() : prog_->function_record(id);
+    }
+    const std::vector<Slot>& argv = local_args.empty() ? args : local_args;
     if (rec == 0) return -1;
     calls_.clear();
     skip_ = false;
@@ -94,7 +103,7 @@ int ScriptVm::run(int32_t id, const std::vector<Slot>& args) {
     record_ = rec;
     const uint32_t nargs = prog_->rd32(rec + 0xc), nslots = prog_->rd32(rec + 8);
     base_ = kPrefix - nargs;
-    for (size_t i = 0; i < args.size() && i < nargs; ++i) stack_[base_ + i] = args[i];
+    for (size_t i = 0; i < argv.size() && i < nargs; ++i) stack_[base_ + i] = argv[i];
     sp_ = base_ + nslots;
     for (uint32_t i = nargs; i < nslots; ++i) stack_[base_ + i] = Slot{};
     pc_ = prog_->code_base() + prog_->rd32(rec);

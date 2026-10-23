@@ -66,6 +66,7 @@ func start(session: DcModels, dungeon_no: int, floor_index: int, character: Stri
 	var net := CoopNet.find(get_tree())
 	if net != null and net.active:   # co-op: the floor is built from the host's seed and record so that everybody gets the same one
 		models.set_coop_floor(int(opts.get("coop_seed", 0)), opts.get("coop_status", PackedByteArray()))
+		models.set_coop_players(int(opts.get("coop_players", 1)))   # (co-op balance: hit points, damage, monster count and drops grow with the players of the floor)
 		coop = CoopDungeon.new()
 		net.session_closed.connect(func(): if not _finished: _finish("escape"))   # the host is gone: nobody simulates the monsters any more
 		hud.other_players = func() -> Array: return coop.other_players()
@@ -231,8 +232,9 @@ func _floor_exit() -> void:
 	_start_floor(floor_no + 1)
 
 # co-op: the host's next floor (its seed and record); every player builds the same one
-func coop_next_floor(seed: int, status: PackedByteArray) -> void:
+func coop_next_floor(seed: int, status: PackedByteArray, players: int = 1) -> void:
 	models.set_coop_floor(seed, status)
+	models.set_coop_players(players)
 	if coop != null:
 		coop.floor_data = {"seed": seed, "status": status}
 	_start_floor(floor_no + 1)
@@ -658,8 +660,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			if not sel.is_empty() and walker.assign_quick(event.keycode - KEY_1, int(menu_entries[sel[0]]["slot"])):
 				_say("Set as quick item %d" % (event.keycode - KEY_1 + 1))
 				_menu_refresh()
-	elif event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_START:
+	elif event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_START and DisplayServer.window_is_focused():
 		_menu_toggle()
+	elif event is InputEventJoypadButton and event.pressed and DisplayServer.window_is_focused() and not menu_open and coop != null and (event.button_index == JOY_BUTTON_LEFT_STICK or event.button_index == JOY_BUTTON_RIGHT_STICK):   # co-op: L3 / R3 = the previous / next character
+		coop.cycle_character(-1 if event.button_index == JOY_BUTTON_LEFT_STICK else 1)
 
 func _make_hud() -> void:
 	_make_menu()

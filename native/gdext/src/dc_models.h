@@ -1,4 +1,5 @@
 #pragma once
+#include "dccore/coop_scale.h"
 #include <set>
 #include <string>
 #include <map>
@@ -62,6 +63,7 @@ class DcModels : public RefCounted {
     std::string ruby_cfg_;     // the dungeon cfg whose Ruby door colour is current (BtCfgCash)
     int ruby_key_ = 0;         // BtRubyDoorKey: the element of the Ruby crystals of this cfg
     int64_t coop_seed_ = -1;
+    int coop_players_ = 1;   // co-op balance: the players of the floor being built (set_coop_players)
     std::unique_ptr<dccore::UserStatus> coop_host_status_;
     Node3D *assemble_walker(std::shared_ptr<dccore::Dungeon> dungeon, const dccore::FloorLayout &layout, int map_no, int floor, const String &character_game_path, bool monsters,
             uint32_t monster_rand_state, const dccore::FloorEvents *events, const dccore::UserStatus *status, int gate_key);
@@ -141,6 +143,8 @@ public:
     // start_floor; the player's own record is only played with. clear_coop_floor() goes back to the single player rules.
     void set_coop_floor(int64_t seed, const PackedByteArray &host_status);
     void clear_coop_floor();
+    Dictionary pad_state() const;   // the DualShock as the game gets it: {bits (PS2 pad word), lx, ly, rx, ry, name}
+    void set_coop_players(int n) { coop_players_ = dccore::coop_clamp_players(n); }   // (dccore/coop_scale.h) used by the next start_floor; 1 outside co-op
     void enter_dungeon_reset() { ruby_cfg_.clear(); }   // a visit to a dungeon starts: the cfg cache is empty (BtMapJumpCashClear)
     PackedByteArray get_status_bytes() const;                    // the player record (what a host sends so the others can build the same floor)
     int64_t draw_coop_seed() { return int64_t(rng_.next() & 0x7fffffff); }   // a fresh floor seed for the others

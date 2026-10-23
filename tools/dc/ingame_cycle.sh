@@ -7,7 +7,7 @@ CHR="$1"; OUT="$2"; CHAR="${CHAR:-0}"; DISC_NAME="${DISC_NAME:-dun\mainchara\c01
 if [ -n "$SKIP_LAUNCH" ]; then
   PID="$SKIP_LAUNCH"
 else
-  powershell -NoProfile -Command "Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Stop-Process -Force"; sleep 3
+  powershell -NoProfile -Command "Get-Process pcsx2-qt -ErrorAction SilentlyContinue | Where-Object { \$_.Path -like '*\DarkCloud\tools\*' } | Stop-Process -Force"; sleep 3
   python -I tools/dc/patch_character.py "$CHR" "$DISC_NAME" | tail -1 || exit 1
   PID=$(powershell -NoProfile -ExecutionPolicy Bypass -File tools/dc/launch_pcsx2.ps1 | tr -d '\r')
 fi

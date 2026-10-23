@@ -202,8 +202,8 @@ func _input(event: InputEvent) -> void:
 		var dir := 0
 		if event is InputEventKey and event.pressed and not event.echo:
 			dir = -1 if event.keycode == KEY_Q else (1 if event.keycode == KEY_E else 0)
-		elif event is InputEventJoypadButton and event.pressed:
-			dir = -1 if event.button_index == JOY_BUTTON_LEFT_SHOULDER else (1 if event.button_index == JOY_BUTTON_RIGHT_SHOULDER else 0)
+		elif event is InputEventJoypadButton and event.pressed and DisplayServer.window_is_focused():
+			dir = -1 if event.button_index == JOY_BUTTON_LEFT_STICK else (1 if event.button_index == JOY_BUTTON_RIGHT_STICK else 0)   # (L3 / R3: L1 / R1 are the camera buttons of the game)
 		if dir != 0:
 			coop.cycle_character(dir)
 

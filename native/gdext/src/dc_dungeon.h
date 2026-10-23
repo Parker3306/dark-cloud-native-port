@@ -14,6 +14,8 @@
 
 namespace godot {
 
+class DcCharacter;
+
 // One generated dungeon floor: every cell's pieces placed exactly as the game's CDungeonParts does it (cell = 160 units, quarter turns about +Y).
 // Layout comes from dccore (verified cell for cell against the game); this node only turns it into meshes.
 class DcDungeon : public Node3D {
@@ -25,6 +27,7 @@ class DcDungeon : public Node3D {
     std::set<std::string> dyn_names_;   // the objects the dungeon's scripts address by name (_GET_OBJHDL): they get a node of their own
     struct DynObject { Node3D *node; Transform3D cell; Vector3 pivot; bool top; };   // top: hangs under the floor node (placed with the cell's transform); else under another dynamic object
     std::map<std::string, std::vector<DynObject>> objects_;
+    std::vector<DcCharacter *> dran_tiles_;
     std::map<int, std::vector<std::pair<int, MeshInstance3D *>>> door_nodes_;   // per cell: the sliding doors (door kind, node), hidden when the door opens
 
 protected:
@@ -40,6 +43,7 @@ public:
     void set_dynamic_objects(const std::set<std::string> &names) { dyn_names_ = names; }   // before setup
     void set_object(const String &name, const Vector3 &offset, const Vector3 &rotation);   // a script moved / turned a frame (the offset and angles are in the part's own axes)
     void set_object_visible(const String &name, bool visible);
+    void set_dran_tile(int tile, int state, double time);   // Dran's arena: 3 / 2 whole, 1 crumbling (the model's motion at that frame), 0 gone
     void set_back(bool b) { back_ = b; }   // the back floor ("ura") is lit by the cfg's URA_* set
     bool back_ = false;
     void open_door(int x, int y, int kind);   // a door (kind 1 locked door, 2 exit gate) of that cell opened: its slabs disappear   // fog / ambient / lights / background from the cfg ("front" floor)

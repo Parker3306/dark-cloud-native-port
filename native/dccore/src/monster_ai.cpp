@@ -94,6 +94,7 @@ void MonsterWorld::spawn(int slot) {
     a.rot[1] = 0.0f;
     a.state = 1;
     a.hp_max = a.hp = base.entry.s32(0x50);
+    if (coop_players > 1) a.hp_max = a.hp = std::max(1, int(float(a.hp) * coop_hp_mult(coop_players) + 0.5f));   // (co-op balance)
     a.monster_code = base.entry.s16(0x54);
     a.kind_boss = base.entry.kind() == 2;
     for (int i = 0; i < 5; ++i) a.resist[size_t(i)] = base.entry.s16(0x56 + size_t(i) * 2);
@@ -134,7 +135,7 @@ void MonsterWorld::spawn(int slot) {
 }
 
 void MonsterWorld::check_view_level() {
-    int near_list[16];
+    int near_list[MonsterUnit::kSlots];
     int count = 0;
     for (auto& a : actors) {
         // (the game clears a per-monster "put to sleep" flag here)
@@ -1025,6 +1026,10 @@ int MonsterWorld::shot_collide(float radius, const float pos[3], const float vel
     if (h < 0) {
         hit[0] = pos[0]; hit[1] = pos[1]; hit[2] = pos[2];
         return 0;
+    }
+    {   // a polygon of one of Dran's arena tiles (attribute 1..12): the tile's counter goes down while it is above 1
+        const int tile = int(int16_t(polys[size_t(h)].attr[0] & 0xFFFFu));
+        if (tile > 0 && tile < 13 && layout_->dran_state[size_t(tile - 1)] > 1) --layout_->dran_state[size_t(tile - 1)];
     }
     return 1;
 }

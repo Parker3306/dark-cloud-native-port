@@ -363,6 +363,9 @@ CollisionPiece parse_collision_mds(View d) {
         is_door[i] = uint8_t(door_kind_of(names[i]));
         if (!is_door[i] && parent >= 0 && uint32_t(parent) < i) is_door[i] = is_door[size_t(parent)];
         piece.frames.push_back({names[i], {float(world[i][12]), float(world[i][13]), float(world[i][14])}});
+        piece.frame_yaw.push_back(float(std::atan2(world[i][8], world[i][10])));
+        piece.obj_names.push_back(names[i]);
+        piece.obj_parent.push_back(parent >= 0 && uint32_t(parent) < i ? parent : -1);
     }
     for (uint32_t i = 0; i < nobj; ++i) {
         const size_t r = size_t(tab) + size_t(i) * 0x70;
@@ -394,6 +397,7 @@ CollisionPiece parse_collision_mds(View d) {
             q.n[0] = nn[0]; q.n[1] = nn[1]; q.n[2] = nn[2]; q.n[3] = 0.0f;
             piece.polys.push_back(q);
             piece.door.push_back(is_door[i]);
+            piece.obj.push_back(uint16_t(i));
         }
     }
     return piece;
@@ -408,7 +412,7 @@ int door_kind_of(const std::string& n) {
     return 0;
 }
 
-void place_polys(const CollisionPiece& piece, int turn, const float pos[3], std::vector<CCPoly>& out, int skip_kinds) {
+void place_polys(const CollisionPiece& piece, int turn, const float pos[3], std::vector<CCPoly>& out, int skip_kinds, const FrameMoves* moves) {
     // rotation about +Y by -90 degrees * turn (right-handed): x' = x*cos + z*sin, z' = -x*sin + z*cos with sin = -turn, cos = 1 for turn 0
     float c = 1, s = 0;
     switch (((turn % 4) + 4) % 4) {
@@ -424,12 +428,27 @@ void place_polys(const CollisionPiece& piece, int turn, const float pos[3], std:
         o[2] = -x * s + z * c + (translate ? pos[2] : 0.0f);
         o[3] = in[3];
     };
+    std::vector<std::array<float, 3>> offs;   // per object: where a script put its frame (or the frame of a parent)
+    if (moves && !moves->empty()) {
+        offs.assign(piece.obj_names.size(), {0.0f, 0.0f, 0.0f});
+        for (size_t i = 0; i < piece.obj_names.size(); ++i)
+            for (int k = int(i); k >= 0; k = piece.obj_parent[size_t(k)]) {
+                auto it = moves->find(piece.obj_names[size_t(k)]);
+                if (it != moves->end()) { offs[i] = it->second; break; }
+            }
+    }
     for (size_t qi = 0; qi < piece.polys.size(); ++qi) {
         if (skip_kinds && qi < piece.door.size() && (piece.door[qi] & skip_kinds)) continue;
         const CCPoly& q = piece.polys[qi];
         CCPoly r = q;
         for (int v = 0; v < 3; ++v) rot(q.v[v], r.v[v], true);
         rot(q.n, r.n, false);
+        if (!offs.empty() && qi < piece.obj.size()) {
+            const std::array<float, 3>& o = offs[piece.obj[qi]];   // (the offset is in the part's own axes: turned like the polygon)
+            float t[3];
+            rot(o.data(), t, false);
+            for (int v = 0; v < 3; ++v) { r.v[v][0] += t[0]; r.v[v][1] += t[1]; r.v[v][2] += t[2]; }
+        }
         out.push_back(r);
     }
 }

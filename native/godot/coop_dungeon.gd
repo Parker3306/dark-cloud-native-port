@@ -70,7 +70,7 @@ func _on_roster_changed() -> void:
 		if peer == 1 or _greeted.has(peer) or not bool(net.roster[peer].get("ready", false)):
 			continue
 		_greeted[peer] = true
-		net.send_event_to(peer, "enter_dungeon", {"dungeon": run.dungeon, "floor": run.floor_no, "seed": floor_data["seed"], "status": floor_data["status"], "back": run.walker.is_back_floor()})
+		net.send_event_to(peer, "enter_dungeon", {"dungeon": run.dungeon, "floor": run.floor_no, "seed": floor_data["seed"], "status": floor_data["status"], "back": run.walker.is_back_floor(), "players": run.walker.get_coop_players()})
 
 # a new floor was built: the old puppets belong to the old walker
 func on_floor_started() -> void:
@@ -146,11 +146,12 @@ func _on_event(from_peer: int, kind: String, data: Dictionary) -> void:
 			if net.is_host:
 				var seed := run.models.draw_coop_seed()
 				var status := run.models.get_status_bytes()
-				net.send_event("next_floor", {"seed": seed, "status": status})
-				run.coop_next_floor(seed, status)
+				var players := net.player_count()
+				net.send_event("next_floor", {"seed": seed, "status": status, "players": players})
+				run.coop_next_floor(seed, status, players)
 		"next_floor":
 			if not net.is_host:
-				run.coop_next_floor(int(data["seed"]), data["status"])
+				run.coop_next_floor(int(data["seed"]), data["status"], int(data.get("players", 1)))
 		"player_status":   # (host) a client's record: the damage code runs with it when that client's sphere hits a monster
 			if net.is_host:
 				if not statuses.has(from_peer) and run.walker != null:   # (the first time: what happened on this floor so far, for a guest who came late)

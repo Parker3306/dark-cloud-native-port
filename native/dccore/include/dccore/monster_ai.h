@@ -11,6 +11,7 @@
 #include <vector>
 #include "dccore/collision.h"
 #include "dccore/combat.h"
+#include "dccore/coop_scale.h"
 #include "dccore/lockon.h"
 #include "dccore/shots.h"
 #include "dccore/dungeon.h"
@@ -205,6 +206,11 @@ public:
     int floor_map = 0;                        // selectMapNo: which dungeon the floor belongs to
     int last_attacker = -1;                   // DAT_01dc4528
     bool double_weapon_exp = false;           // CMonstorUnit +0x44
+    int coop_players = 1;                     // co-op balance (coop_scale.h): the players of this floor; monsters spawned from now on get the hit points, damage and drops of that party
+    void set_coop_players(int n) {
+        coop_players = coop_clamp_players(n);
+        pool.monster_damage_mult = coop_damage_mult(coop_players);
+    }
     std::array<int32_t, 32> gate_key_stack = [] { std::array<int32_t, 32> v; v.fill(-1); return v; }();   // gate keys already dropped on this floor
     static constexpr std::array<int16_t, 6> kDefaultWeapon{257, 299, 314, 331, 347, 363};   // defWeapon: the weapon each character starts with
     int bak_body_col = -1;                    // bak_ColNo: the body sphere SET_BODY_COL_PARA applies to
@@ -258,6 +264,7 @@ public:
     int check_dmg(MonsterActor& a);
     void update_cols(MonsterActor& a, const PoseSample& pose);   // world positions of the body and attack spheres at the drawn frame
     void drop_loot(MonsterActor& a);
+    void drop_loot_base(MonsterActor& a);   // the game's own loot rules (drop_loot adds the co-op bonus)
     int check_item_get(int item) const;
     int select_attach(const MonsterActor& a);
     // CMonstorUnit::SetKey (end of ArrangementPos): one random monster (three on dungeon 2) carries this dungeon's gate key unless the player has it already.
@@ -275,7 +282,8 @@ public:
     LockState lock;
     int set_near_target(int shift, bool force);   // picks the monster to lock on to among those in front of the player; returns how many are in reach
     void lock_off();
-    void update_lock_cursor();                    // the draw part: auto target while not locked; validates the lock otherwise and aims
+    void update_lock_cursor();
+    void lock_aim_pos(const MonsterActor& a, float out[3]) const;   // the lock-on cursor / aim point of a monster                    // the draw part: auto target while not locked; validates the lock otherwise and aims
     void sword_dmg_check(float param, int wear);   // BattleSubWeaponDmg / SwordDmgCheck1: the weapon wears down
     void load_player_fx(const ShotDef& def, std::shared_ptr<Character> model, int index);
     int fire_player_shot(const float pos[3], const float target[3], int owner_kind, int sub_id, int damage, int wait, int force_phase = -1, bool set_attribute = true, bool set_damage = true,

@@ -39,6 +39,7 @@ void DcDungeon::_bind_methods() {
     ClassDB::bind_method(D_METHOD("open_door", "x", "y", "kind"), &DcDungeon::open_door);
     ClassDB::bind_method(D_METHOD("set_object", "name", "offset", "rotation"), &DcDungeon::set_object);
     ClassDB::bind_method(D_METHOD("set_object_visible", "name", "visible"), &DcDungeon::set_object_visible);
+    ClassDB::bind_method(D_METHOD("set_dran_tile", "tile", "state", "time"), &DcDungeon::set_dran_tile);
 }
 
 Vector3 DcDungeon::get_start_position() const {
@@ -60,6 +61,17 @@ void DcDungeon::set_object(const String &name, const Vector3 &offset, const Vect
         const Vector3 origin = o.pivot + offset - turn.xform(o.pivot);   // turned about its own frame, then moved
         const Transform3D local(turn, origin);
         o.node->set_transform(o.top ? o.cell * local : local);
+    }
+}
+
+void DcDungeon::set_dran_tile(int tile, int state, double time) {
+    if (tile < 0 || size_t(tile) >= dran_tiles_.size()) return;
+    DcCharacter *t = dran_tiles_[size_t(tile)];
+    t->set_visible(state != 0);
+    if (state == 1) {
+        t->play(0, false);
+        t->set_playing(false);
+        t->set_time(time);
     }
 }
 
@@ -208,7 +220,7 @@ void DcDungeon::setup(std::shared_ptr<dccore::Dungeon> dungeon, const dccore::Fl
                 bool has_doors = false;
                 const int turn = dccore::model_turn_index(c.rot, m.rot);
                 const Basis basis(Vector3(0, 1, 0), -real_t(turn) * real_t(3.14159265358979323846) * real_t(0.5));
-                const Vector3 at(x * dccore::kCellSize + m.offset[0], m.offset[1], y * dccore::kCellSize + m.offset[2]);
+                const Vector3 at(x * dccore::kCellSize + m.offset[0] * 10.0f, m.offset[1] * 10.0f, y * dccore::kCellSize + m.offset[2] * 10.0f);   // (the cfg gives offsets in tens of units)
                 auto mi_model = dungeon_->models.find(m.file);
                 if (mi_model != dungeon_->models.end())
                     for (const auto &kv : mi_model->second.door_surfaces) {
@@ -279,6 +291,19 @@ void DcDungeon::setup(std::shared_ptr<dccore::Dungeon> dungeon, const dccore::Fl
         t->setup(tile, tinfo);
         t->set_playing(false);
         add_child(t);
+        dran_tiles_.push_back(t);
+    }
+    // d05's scenery blocks (buildDummyModel): d05c01 / c02 / c03.mds (1 / 2 / 3 cells wide) on the empty ground between the rooms
+    for (size_t i = 0; i < layout_.dummy_pos.size() && i < layout_.dummy_kind.size(); ++i) {
+        const int kind = layout_.dummy_kind[i];
+        if (kind < 0 || size_t(kind) >= dungeon_->cfg.dummy_models.size()) continue;
+        Ref<ArrayMesh> mesh = mesh_for(dungeon_->cfg.dummy_models[size_t(kind)], 0);
+        if (mesh.is_null() || mesh->get_surface_count() == 0) continue;
+        MeshInstance3D *dm = memnew(MeshInstance3D);
+        dm->set_mesh(mesh);
+        dm->set_position(Vector3(layout_.dummy_pos[i][0], layout_.dummy_pos[i][1], layout_.dummy_pos[i][2]));
+        add_child(dm);
+        ++placed;
     }
     // the torches of the parts: a warm light with a little flicker (the game only shows the flame sprite; the light is the modern extra)
     for (const auto &f : dccore::floor_fires(*dungeon_, layout_)) {

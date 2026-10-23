@@ -38,7 +38,7 @@ struct MonsterInstance {
 
 class MonsterUnit {
 public:
-    static constexpr int kSlots = 16;
+    static constexpr int kSlots = 24;   // (the game has 16; co-op adds up to 50 % more monsters on a random floor, see coop_scale.h)
     std::vector<MonsterBase> bases;
     std::array<MonsterInstance, kSlots> slots;
 

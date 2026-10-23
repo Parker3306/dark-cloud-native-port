@@ -2,6 +2,7 @@
 // Map collision: the polygon soup of a floor and the game's own character movement queries (MoveCheck, CheckWidth, GetFootPoly, CheckHit...).
 // Ported from the decompiled functions at 0x149C30-0x14B830 (main ELF); verified against the running game (tools/dc/validate_move.py).
 #include <array>
+#include <map>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -24,6 +25,10 @@ static_assert(sizeof(CCPoly) == 0x50, "CCPoly must match the game's layout");
 struct CollisionPiece {
     std::vector<CCPoly> polys;
     std::vector<uint8_t> door;   // parallel to polys: kind of the sliding door the polygon belongs to (see door_kind_of), 0 for fixed geometry
+    std::vector<float> frame_yaw;   // parallel to frames: the turn of the object's own matrix (where its +z points, atan2(x, z)); a script's world coordinate base takes it from _GET_OBJHDL_ROT
+    std::vector<uint16_t> obj;   // parallel to polys: the object (frame) of the file the polygon belongs to
+    std::vector<std::string> obj_names;   // the objects' names and parents (a script moves a frame and its children: gates, bridges)
+    std::vector<int32_t> obj_parent;
     std::vector<std::pair<std::string, std::array<float, 3>>> frames;   // every object of the file with its position in the piece's space (trigger markers are empty objects)
 };
 
@@ -41,7 +46,9 @@ struct Placement {
 // Doors that open on an event: 1 locked door ("ndoor*", opens with the door key), 2 exit gate ("out_door*", opens with the gate key), 4 character door ("cdoor*"), 0 anything else.
 int door_kind_of(const std::string& object_name);
 // skip_kinds: bit mask of door kinds whose polygons are left out (doors that were opened).
-void place_polys(const CollisionPiece& piece, int turn, const float pos[3], std::vector<CCPoly>& out, int skip_kinds = 0);
+// moves: frames a room script has moved (name -> offset, _SET_OBJHDL_POS): their polygons (and those of their children) follow.
+using FrameMoves = std::map<std::string, std::array<float, 3>>;
+void place_polys(const CollisionPiece& piece, int turn, const float pos[3], std::vector<CCPoly>& out, int skip_kinds = 0, const FrameMoves* moves = nullptr);
 
 // ---- the queries -------------------------------------------------------------------------------------------------------------------------------
 

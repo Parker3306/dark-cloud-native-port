@@ -13,7 +13,7 @@ public class W {
   [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
 }
 "@
-$p = Get-Process pcsx2-qt -ErrorAction Stop | Where-Object { $_.MainWindowHandle -ne 0 -and ($ProcId -eq 0 -or $_.Id -eq $ProcId) } | Select-Object -First 1
+$p = Get-Process pcsx2-qt -ErrorAction Stop | Where-Object { $_.Path -like '*\DarkCloud\tools\*' -and $_.MainWindowHandle -ne 0 -and ($ProcId -eq 0 -or $_.Id -eq $ProcId) } | Select-Object -First 1
 $h = $p.MainWindowHandle
 if ([W]::IsIconic($h)) { Write-Output "SKIPPED: PCSX2 is minimized"; exit 2 }
 $r = New-Object W+RECT; [W]::GetWindowRect($h, [ref]$r) | Out-Null

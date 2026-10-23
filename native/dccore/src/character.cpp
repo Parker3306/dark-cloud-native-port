@@ -195,6 +195,37 @@ Character load_character_parts(View mds_data, View bbp_data, View mot_data, View
     return ch;
 }
 
+namespace {
+// `MOTION 0, "c01dbas.mot", "c01dbas.bbp", "c01dbas.wgt"`: the files of the motion set when they do not carry the model's stem (the village packs of the hero are named that way)
+std::vector<std::string> cfg_motion_files(View text) {
+    std::vector<std::string> out;
+    std::string s(reinterpret_cast<const char*>(text.data()), text.size());
+    size_t pos = 0;
+    while (pos < s.size()) {
+        size_t eol = s.find('\n', pos);
+        if (eol == std::string::npos) eol = s.size();
+        std::string line = s.substr(pos, eol - pos);
+        pos = eol + 1;
+        size_t c = line.find("//");
+        if (c != std::string::npos) line.resize(c);
+        size_t b = 0;
+        while (b < line.size() && std::isspace(static_cast<unsigned char>(line[b]))) ++b;
+        if (line.compare(b, 6, "MOTION") != 0 || (b + 6 < line.size() && !std::isspace(static_cast<unsigned char>(line[b + 6])))) continue;
+        size_t q = b + 6;
+        for (;;) {
+            const size_t q1 = line.find('"', q);
+            if (q1 == std::string::npos) break;
+            const size_t q2 = line.find('"', q1 + 1);
+            if (q2 == std::string::npos) break;
+            out.push_back(line.substr(q1 + 1, q2 - q1 - 1));
+            q = q2 + 1;
+        }
+        break;
+    }
+    return out;
+}
+}  // namespace
+
 Character load_character(const Pack& pack, const std::string& cfg_entry) {
     Character ch;
     std::string mds_name, img_name;
@@ -235,9 +266,14 @@ Character load_character(const Pack& pack, const std::string& cfg_entry) {
     std::vector<Mat4> bbp;
     std::map<uint32_t, std::map<uint32_t, float>> weights;
     std::set<uint32_t> targets;
-    if (const PackEntry* e = pack.find(stem + ".bbp")) bbp = parse_bbp(pack.data(*e));
-    if (const PackEntry* e = pack.find(stem + ".mot")) ch.tracks = parse_mot(pack.data(*e));
-    if (const PackEntry* e = pack.find(stem + ".wgt")) {
+    std::string mot_name = stem + ".mot", bbp_name = stem + ".bbp", wgt_name = stem + ".wgt";
+    if (cfg) {   // (a pack whose motion files are named in its cfg: MOTION 0, "c01dbas.mot", "c01dbas.bbp", "c01dbas.wgt")
+        const std::vector<std::string> files = cfg_motion_files(pack.data(*cfg));
+        if (files.size() >= 3 && pack.find(files[0]) && !pack.find(mot_name)) { mot_name = files[0]; bbp_name = files[1]; wgt_name = files[2]; }
+    }
+    if (const PackEntry* e = pack.find(bbp_name)) bbp = parse_bbp(pack.data(*e));
+    if (const PackEntry* e = pack.find(mot_name)) ch.tracks = parse_mot(pack.data(*e));
+    if (const PackEntry* e = pack.find(wgt_name)) {
         auto recs = parse_wgt(pack.data(*e));
         for (const auto& r : recs) targets.insert(r.target);
         weights = vertex_weights(recs);
