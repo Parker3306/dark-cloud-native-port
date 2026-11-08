@@ -40,3 +40,7 @@ __pycache__/
 
 # portkit: run logs, screenshot captures and baselines (game renders: never commit)
 .portkit/
+
+# local tool settings and stray captures (not part of the project)
+.claude/
+/test_*.wav

@@ -45,7 +45,7 @@ def capture(manifest, shots, paths):
     os.makedirs(paths['cur'], exist_ok=True)
     os.makedirs(paths['logs'], exist_ok=True)
     env = dict(os.environ)
-    env.update({k: str(v) for k, v in project.get('env', {}).items()})
+    env.update({k: os.path.expandvars(str(v)) for k, v in project.get('env', {}).items()})
     failed = {}
     for s in shots:
         out = _out_path(s, paths, root)

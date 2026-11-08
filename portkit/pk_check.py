@@ -169,7 +169,7 @@ def run(manifest, args):
     run_dir = os.path.join(state_dir, 'runs', stamp)
     os.makedirs(run_dir, exist_ok=True)
     base_env = dict(os.environ)
-    base_env.update({k: str(v) for k, v in project.get('env', {}).items()})
+    base_env.update({k: os.path.expandvars(str(v)) for k, v in project.get('env', {}).items()})
     groups = {g['name']: g for g in manifest.get('group', [])}
     group_left = {}
     for c in sel:
@@ -184,7 +184,7 @@ def run(manifest, args):
         shell_spec = c.get('shell', defaults.get('shell', project.get('shell')))
         cwd = os.path.normpath(os.path.join(root, c.get('cwd', defaults.get('cwd', '.'))))
         env = dict(base_env)
-        env.update({k: str(v) for k, v in c.get('env', {}).items()})
+        env.update({k: os.path.expandvars(str(v)) for k, v in c.get('env', {}).items()})
         timeout = c.get('timeout', defaults.get('timeout', DEFAULT_TIMEOUT))
         log_path = os.path.join(run_dir, name + '.log')
         missing = [p for p in _as_list(c.get('requires')) if not os.path.exists(os.path.join(root, p))]

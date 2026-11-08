@@ -100,7 +100,7 @@ def run_scenario(manifest, name, interactive=False):
     project = manifest.get('project', {})
     shell = s.get('shell', manifest.get('defaults', {}).get('shell', project.get('shell')))
     base_env = dict(os.environ)
-    base_env.update({k: str(v) for k, v in project.get('env', {}).items()})
+    base_env.update({k: os.path.expandvars(str(v)) for k, v in project.get('env', {}).items()})
     insts = s.get('instance', [])
     n = len(insts)
     procs = []
@@ -115,7 +115,7 @@ def run_scenario(manifest, name, interactive=False):
         for k, v in dict(role=role, index=i, n=n, x=x, y=y, w=w, h=h, log=log.replace(os.sep, '/'), dir=d.replace(os.sep, '/')).items():
             cmd = cmd.replace('{' + k + '}', str(v))
         env = dict(base_env)
-        env.update({k: str(v) for k, v in inst.get('env', {}).items()})
+        env.update({k: os.path.expandvars(str(v)) for k, v in inst.get('env', {}).items()})
         argv = pk_check._shell_prefix(shell) + [cmd]
         cwd = os.path.normpath(os.path.join(root, inst.get('cwd', s.get('cwd', '.'))))
         f = open(log, 'wb')

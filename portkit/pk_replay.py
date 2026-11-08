@@ -103,7 +103,7 @@ def run(manifest, args):
         if os.path.exists(path):
             os.replace(path, path + '.bak')
         env = dict(os.environ)
-        env.update({k: str(v) for k, v in manifest.get('project', {}).get('env', {}).items()})
+        env.update({k: os.path.expandvars(str(v)) for k, v in manifest.get('project', {}).get('env', {}).items()})
         env[cfg['env_var']] = path
         shell = pk_check._shell_prefix(c.get('shell', manifest.get('project', {}).get('shell')))
         cmd = c['record_cmd']
